@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Custom New Tab</title>
+    <!-- Preconnect to Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Load selected Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Dancing+Script:wght@400;700&family=Inter:wght@200;300;400;600;700&family=Lato:wght@300;400;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Merriweather:wght@300;400;700&family=Montserrat:wght@200;300;400;600;700&family=Oswald:wght@300;400;600;700&family=Pacifico&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@200;300;400;600;700&family=Roboto+Mono:wght@200;300;400;600&family=Roboto:wght@300;400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- DYNAMIC CSS VARIABLES (Controlled by JS) --- */
+        :root {
+            /* Theme */
+            --bg-image: url('');
+            --bg-color: #1a1a1a;
+            --bg-overlay: rgba(0, 0, 0, 0.3);
+            
+            /* Typography */
+            --text-color: #ffffff;
+            --text-shadow: 0 2px 4px rgba(0,0,0,0.3), 0 4px 15px rgba(0,0,0,0.2);
+            --global-scale: 0.7;
+            
+            /* Individual Typography */
+            --clock-font: 'Oswald', sans-serif;
+            --clock-size: 100px;
+            --clock-weight: 700;
+            
+            --greeting-font: 'Playfair Display', serif;
+            --greeting-size: 28px;
+            --greeting-weight: 300;
+            
+            --quote-font: 'Inter', system-ui, sans-serif;
+            --quote-size: 16px;
+            --quote-weight: 400;
+            
+            /* Glassmorphism & Layout */
+            --glass-bg: rgba(255, 255, 255, 0.02);
+            --glass-blur: 3px;
+            --glass-radius: 32px;
+            --alignment: center;
+        }
+
+        * { box-sizing: border-box; outline: none; }
+
+        body {
+            margin: 0;
+            padding: clamp(15px, 3vw, 40px); 
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-color);
+            transition: background-image 0.5s ease;
+            overflow-x: hidden;
+            overflow-y: auto; 
+        }
+
+        body::before {
+            content: '';
+            position: fixed; 
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-overlay);
+            z-index: -1;
+            transition: background 0.3s ease;
+        }
+
+        /* Gear Icon */
+        #settings-btn {
+            position: fixed;
+            top: clamp(20px, 3vw, 40px);
+            left: clamp(20px, 3vw, 40px);
+            font-size: 22px;
+            cursor: pointer;
+            opacity: 0.4;
+            transition: opacity 0.3s, transform 0.5s;
+            z-index: 10;
+            color: white;
+            text-shadow: 0 1px 5px rgba(0,0,0,0.5);
+        }
+        #settings-btn:hover { 
+            opacity: 1; 
+            transform: rotate(90deg); 
+        }
+
+        /* Main Container */
+        .container {
+            flex-grow: 1;
+            text-align: center;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: var(--alignment);
+            gap: clamp(15px, 4vh, 45px); 
+            padding-top: clamp(40px, 8vh, 60px); 
+        }
+
+        /* Clock & Greeting */
+        #clock { 
+            font-family: var(--clock-font);
+            font-size: clamp(3rem, 18vw, calc(var(--clock-size) * var(--global-scale))); 
+            font-weight: var(--clock-weight); 
+            letter-spacing: -2px; 
+            margin: 0; 
+            line-height: 1; 
+            text-shadow: var(--text-shadow);
+            transition: font-size 0.2s, font-weight 0.2s;
+            white-space: nowrap; 
+        }
+        #greeting { 
+            font-family: var(--greeting-font);
+            font-size: clamp(1.2rem, 6vw, calc(var(--greeting-size) * var(--global-scale))); 
+            font-weight: var(--greeting-weight); 
+            letter-spacing: 1px;
+            margin-top: 5px; 
+            opacity: 0.85; 
+            text-shadow: var(--text-shadow);
+            transition: font-size 0.2s, font-weight 0.2s;
+            word-break: break-word;
+        }
+
+        /* Search Bar */
+        .search-wrapper {
+            width: 90%;
+            max-width: 320px;
+            position: relative;
+        }
+        .search-wrapper input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255,255,255,0.4);
+            padding: 10px 15px;
+            font-size: calc(18px * var(--global-scale));
+            font-family: inherit;
+            color: white;
+            text-align: center;
+            transition: border-color 0.3s, background-color 0.3s, font-size 0.2s;
+            border-radius: 4px 4px 0 0;
+            text-shadow: var(--text-shadow);
+            letter-spacing: 0.5px;
+        }
+        .search-wrapper input::placeholder { 
+            color: rgba(255,255,255,0.5); 
+            font-weight: 300;
+        }
+        .search-wrapper input:focus { 
+            border-bottom-color: rgba(255,255,255,0.9); 
+            background: rgba(255,255,255,0.03);
+        }
+
+        /* Glassy Card (Folders) */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid rgba(255,255,255,0.12);
+            border-top: 1px solid rgba(255,255,255,0.3);
+            border-left: 1px solid rgba(255,255,255,0.3);
+            border-radius: var(--glass-radius);
+            padding: clamp(20px, 5vw, 35px); 
+            width: 100%;
+            max-width: 380px;
+            height: auto;
+            min-height: calc(160px * Math.max(0.8, var(--global-scale)));
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+        }
+
+        /* App-style Link Icons Grid */
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: clamp(10px, 3vw, 20px) clamp(8px, 2vw, 15px);
+            justify-items: center;
+            align-content: start;
+            flex-grow: 1;
+        }
+
+        .link-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s;
+            width: clamp(45px, 12vw, calc(52px * var(--global-scale)));
+            height: clamp(45px, 12vw, calc(52px * var(--global-scale)));
+            cursor: pointer;
+            background: rgba(255,255,255,0.15);
+            border-radius: calc(16px * var(--global-scale));
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .link-item:hover { 
+            transform: translateY(-4px) scale(1.05); 
+            opacity: 1;
+            background: rgba(255,255,255,0.25);
+        }
+        .link-item i {
+            font-size: clamp(20px, 5vw, calc(24px * var(--global-scale)));
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Folder/Page Pagination */
+        .pages-nav {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 10px;
+        }
+        .page-dot {
+            cursor: pointer;
+            opacity: 0.3;
+            transition: all 0.3s;
+            font-size: calc(14px * var(--global-scale));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            text-shadow: var(--text-shadow);
+        }
+        .page-dot:hover, .page-dot.active { 
+            opacity: 1; 
+            transform: scale(1.1); 
+            text-shadow: 0 0 10px rgba(255,255,255,0.6);
+        }
+
+        /* Daily Quote Widget */
+        #quote-container {
+            margin-top: auto; 
+            padding-top: 40px;
+            text-align: center;
+            max-width: 600px;
+            opacity: 0.85;
+        }
+        #quote-text {
+            font-family: var(--quote-font);
+            font-size: max(0.9rem, calc(var(--quote-size) * var(--global-scale)));
+            font-weight: var(--quote-weight);
+            font-style: italic;
+            margin-bottom: 8px;
+            text-shadow: var(--text-shadow);
+            transition: font-size 0.2s, font-weight 0.2s;
+        }
+        #quote-author {
+            font-family: var(--quote-font);
+            font-size: max(0.7rem, calc((var(--quote-size) * 0.75) * var(--global-scale)));
+            font-weight: 600;
+            text-shadow: var(--text-shadow);
+            letter-spacing: 0.5px;
+            transition: font-size 0.2s;
+        }
+
+        /* --- SETTINGS MODAL UI --- */
+        #settings-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            padding: 20px;
+        }
+        .settings-content {
+            background: #1e1e1e;
+            padding: 25px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 800px;
+            height: 85vh;
+            max-height: 800px;
+            color: #fff;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #333;
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .settings-header h2 { margin: 0; font-size: 22px; font-weight: 600; }
+
+        .settings-layout {
+            display: flex;
+            flex-grow: 1;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        /* Left Sidebar Nav */
+        .settings-sidebar {
+            width: 200px;
+            background: #252525;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            border: 1px solid #333;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+        .nav-btn {
+            background: transparent;
+            color: #aaa;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: left;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-btn:hover { background: #333; color: white; }
+        .nav-btn.active { background: #0078d7; color: white; }
+
+        /* Right Content Area */
+        .settings-panels {
+            flex-grow: 1;
+            background: #252525;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #333;
+            overflow-y: auto;
+        }
+        
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Form Controls */
+        .setting-section { margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #333; }
+        .setting-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .setting-section h3 { margin-top: 0; margin-bottom: 15px; font-size: 16px; color: #ddd; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: #bbb; }
+        .form-group input[type="text"], .form-group select {
+            width: 100%; padding: 10px 12px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 6px; font-family: inherit; font-size: 14px;
+        }
+        .form-group input[type="text"]:focus, .form-group select:focus { border-color: #0078d7; }
+        
+        /* Sliders */
+        .range-wrapper { display: flex; align-items: center; gap: 15px; }
+        input[type="range"] { flex-grow: 1; -webkit-appearance: none; height: 4px; background: #444; border-radius: 2px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #0078d7; cursor: pointer; transition: transform 0.1s; }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        .range-value { font-size: 12px; color: #888; width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+
+        /* Toggles */
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #0078d7; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* File Upload Area */
+        .upload-area {
+            border: 2px dashed #444; border-radius: 8px; padding: 20px; text-align: center; background: #1a1a1a; cursor: pointer; transition: all 0.2s; margin-top: 10px;
+        }
+        .upload-area:hover { border-color: #0078d7; background: #222; }
+        .upload-area i { font-size: 24px; color: #888; margin-bottom: 10px; }
+        .upload-area p { margin: 0; font-size: 13px; color: #bbb; }
+        #file-input { display: none; }
+
+        /* Icon Picker */
+        .icon-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 6px;
+            background: #1a1a1a; padding: 12px; border-radius: 8px; border: 1px solid #444; margin-top: 5px;
+        }
+        .icon-option {
+            width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+            background: #252525; border: 1px solid #333; border-radius: 6px; cursor: pointer; color: #aaa; transition: all 0.2s; font-size: 14px;
+        }
+        .icon-option:hover { background: #333; color: white; border-color: #555; }
+        .icon-option.selected { background: #0078d7; color: white; border-color: #0078d7; box-shadow: 0 0 10px rgba(0, 120, 215, 0.5); }
+
+        /* Font Preview Box */
+        .font-preview-box {
+            margin-top: 10px;
+            padding: 15px;
+            background: #151515;
+            border: 1px dashed #444;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 26px;
+            color: white;
+            transition: font-family 0.2s, font-weight 0.2s;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        /* Editor specific layout */
+        .editor-container { display: flex; gap: 15px; height: 100%; flex-direction: column; }
+        .pages-list { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .page-pill { 
+            padding: 8px 15px; background: #1a1a1a; border: 1px solid #444; border-radius: 20px; 
+            cursor: pointer; font-size: 13px; white-space: nowrap; display: flex; align-items: center; gap: 8px;
+        }
+        .page-pill.active { background: rgba(0, 120, 215, 0.2); border-color: #0078d7; color: white; }
+        
+        .page-details { background: #1a1a1a; border-radius: 8px; padding: 15px; border: 1px solid #333; flex-grow: 1; overflow-y: auto;}
+        .link-edit-card { background: #252525; border: 1px solid #444; border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .link-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex-grow: 1; }
+        .link-fields input { padding: 8px; font-size: 12px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 4px; }
+        .color-col { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 40px;}
+        .color-col label { font-size: 10px; margin: 0; color: #888;}
+        .color-col input[type="color"] { padding: 0; border: none; width: 24px; height: 24px; cursor: pointer; background: transparent; }
+
+        /* Buttons */
+        .btn-icon { background: none; border: none; color: #888; cursor: pointer; font-size: 16px; padding: 5px; transition: color 0.2s; }
+        .btn-icon:hover { color: white; }
+        .btn-icon.danger:hover { color: #ff4d4d; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #333; }
+        .btn { background: #0078d7; color: white; border: none; padding: 9px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: background 0.2s; }
+        .btn:hover { background: #0063b1; }
+        .btn-secondary { background: #444; }
+        .btn-secondary:hover { background: #555; }
+        .btn-danger { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); }
+        .btn-danger:hover { background: #ff4d4d; color: white; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+        @media (max-width: 700px) {
+            .settings-content { padding: 15px; height: 95vh; width: 95%; max-width: 100%; }
+            .settings-header h2 { font-size: 18px; }
+            .settings-layout { flex-direction: column; gap: 10px; }
+            .settings-sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding: 5px; -ms-overflow-style: none; scrollbar-width: none; }
+            .settings-sidebar::-webkit-scrollbar { display: none; }
+            .nav-btn { white-space: nowrap; padding: 8px 12px; font-size: 13px; }
+            .settings-panels { padding: 15px; }
+            .link-fields { grid-template-columns: 1fr; }
+            .range-wrapper { flex-wrap: wrap; }
+            
+            #settings-btn { top: 20px; left: 20px; font-size: 20px; }
+        }
+        
+        @media (max-width: 400px) {
+            .links-grid { gap: 10px 5px; }
+            .glass-card { padding: 15px; border-radius: calc(var(--glass-radius) * 0.8); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Settings Gear -->
+    <div id="settings-btn" title="Settings"><i class="fas fa-cog"></i></div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Text Group -->
+        <div id="clock-container">
+            <h1 id="clock">12:00 PM</h1>
+            <div id="greeting">Hello Jo!</div>
+        </div>
+
+        <!-- Search -->
+        <div class="search-wrapper" id="search-wrapper">
+            <form id="search-form">
+                <input type="text" id="search-input" placeholder="Type to search..." autocomplete="off">
+            </form>
+        </div>
+
+        <!-- Glass Folder -->
+        <div class="glass-card" id="glass-card">
+            <div class="links-grid" id="links-container"></div>
+            <div class="pages-nav" id="pages-nav"></div>
+        </div>
+    </div>
+    
+    <!-- Daily Quote Widget -->
+    <div id="quote-container">
+        <div id="quote-text">"Loading quote..."</div>
+        <div id="quote-author"></div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h2>Settings</h2>
+                <button class="btn-icon" id="close-settings-x"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="settings-layout">
+                <!-- Sidebar Nav -->
+                <div class="settings-sidebar">
+                    <button class="nav-btn active" data-tab="general"><i class="fas fa-image"></i> Background</button>
+                    <button class="nav-btn" data-tab="typography"><i class="fas fa-font"></i> Typography</button>
+                    <button class="nav-btn" data-tab="layout"><i class="fas fa-layer-group"></i> Layout & Widgets</button>
+                    <button class="nav-btn" data-tab="editor"><i class="fas fa-link"></i> Folders & Apps</button>
+                </div>
+
+                <!-- Panels -->
+                <div class="settings-panels">
+                    
+                    <!-- Tab: Background -->
+                    <div id="tab-general" class="tab-panel active">
+                        <div class="setting-section">
+                            <h3>Greeting</h3>
+                            <div class="form-group">
+                                <label>Your Name</label>
+                                <input type="text" id="input-name" placeholder="e.g., Jo">
+                            </div>
+                        </div>
+                        
+                        <div class="setting-section">
+                            <h3>Background Source</h3>
+                            <div class="form-group">
+                                <select id="select-bg-type">
+                                    <option value="unsplash">Curated Unsplash Collection (Random)</option>
+                                    <option value="url">Single Image URL / Google Drive</option>
+                                    <option value="custom_list">Custom URL List (Randomize)</option>
+                                    <option value="local">Local Image Upload</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Unsplash Collections (New) -->
+                            <div id="bg-unsplash-section" class="form-group">
+                                <label>Choose Collection Theme</label>
+                                <select id="select-unsplash-collection">
+                                    <option value="nature">Nature & Landscapes</option>
+                                    <option value="architecture">Architecture & Cityscapes</option>
+                                    <option value="minimal">Minimal & Abstract</option>
+                                    <option value="space">Space & Sci-Fi</option>
+                                </select>
+                                <small style="color:#888; display:block; margin-top:5px;">A new beautiful image will load every time you open a tab.</small>
+                            </div>
+
+                            <!-- Single URL -->
+                            <div id="bg-url-section" class="form-group" style="display: none;">
+                                <label>Image URL</label>
+                                <input type="text" id="input-bg" placeholder="https://...">
+                            </div>
+
+                            <!-- Custom URL List -->
+                            <div id="bg-custom-list-section" class="form-group" style="display: none;">
+                                <label>Custom Image URLs (One per line)</label>
+                                <textarea id="input-bg-list" style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 6px; font-family: monospace; font-size: 12px; resize: vertical;" rows="5" placeholder="https://imgbb.com/...&#10;https://drive.google.com/..."></textarea>
+                                <small style="color:#888; display:block; margin-top:5px;">Paste direct links or Google Drive links here. A random one will be chosen every time you open a new tab.</small>
+                            </div>
+                            
+                            <!-- Local Upload Area -->
+                            <div id="bg-local-section" class="form-group" style="display: none;">
+                                <div class="upload-area" id="upload-dropzone">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Click to upload a local image</p>
+                                    <input type="file" id="file-input" accept="image/jpeg, image/png, image/webp">
+                                </div>
+                                <div id="upload-status" style="font-size: 12px; color: #4caf50; margin-top: 10px; text-align: center; display: none;">Image uploaded and saved!</div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-section">
+                            <h3>Overlay Filter</h3>
+                            <div class="form-group">
+                                <label>Darken Background <span class="range-value" id="val-overlay">30%</span></label>
+                                <div class="range-wrapper">
+                                    <input type="range" id="slider-overlay" min="0" max="90" value="30">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Typography & Style -->
+                    <div id="tab-typography" class="tab-panel">
+                        <div class="setting-section">
+                            <h3>Global Settings</h3>
+                            <div class="form-group">
+                                <label>Global Sizing Scale <span class="range-value" id="val-scale">0.7x</span></label>
+                                <div class="range-wrapper">
+                                    <input type="range" id="slider-scale" min="0.5" max="1.5" step="0.1" value="0.7">
+                                </div>
+                            </div>
+                            <div class="toggle-row">
+                                <span style="font-size: 13px; color: #bbb;">Enable Text Shadow (Crucial for light backgrounds)</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="toggle-shadow" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="setting-section">
+                            <h3>Clock</h3>
+                            <div class="form-group">
+                                <select id="select-clock-font">
+                                    <optgroup label="Sans-Serif">
+                                        <option value="'Inter', system-ui, sans-serif" style="font-family: 'Inter', sans-serif;">Inter</option>
+                                        <option value="'Roboto', sans-serif" style="font-family: 'Roboto', sans-serif;">Roboto</option>
+                                        <option value="'Poppins', sans-serif" style="font-family: 'Poppins', sans-serif;">Poppins</option>
+                                        <option value="'Montserrat', sans-serif" style="font-family: 'Montserrat', sans-serif;">Montserrat</option>
+                                        <option value="'Lato', sans-serif" style="font-family: 'Lato', sans-serif;">Lato</option>
+                                        <option value="'Segoe UI', system-ui, sans-serif" style="font-family: 'Segoe UI', sans-serif;">Segoe UI (System Default)</option>
+                                    </optgroup>
+                                    <optgroup label="Serif">
+                                        <option value="'Playfair Display', serif" style="font-family: 'Playfair Display', serif;">Playfair Display</option>
+                                        <option value="'Merriweather', serif" style="font-family: 'Merriweather', serif;">Merriweather</option>
+                                        <option value="'Lora', serif" style="font-family: 'Lora', serif;">Lora</option>
+                                    </optgroup>
+                                    <optgroup label="Display & Script">
+                                        <option value="'Bebas Neue', display" style="font-family: 'Bebas Neue', display;">Bebas Neue</option>
+                                        <option value="'Oswald', sans-serif" style="font-family: 'Oswald', sans-serif;">Oswald</option>
+                                        <option value="'Pacifico', cursive" style="font-family: 'Pacifico', cursive;">Pacifico</option>
+                                        <option value="'Dancing Script', cursive" style="font-family: 'Dancing Script', cursive;">Dancing Script</option>
+                                    </optgroup>
+                                    <optgroup label="Monospace">
+                                        <option value="'Roboto Mono', monospace" style="font-family: 'Roboto Mono', monospace;">Roboto Mono</option>
+                                        <option value="'Space Mono', monospace" style="font-family: 'Space Mono', monospace;">Space Mono</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Size <span class="range-value" id="val-clock-size">100px</span></label>
+                                <div class="range-wrapper">
+                                    <input type="range" id="slider-clock-size" min="40" max="200" step="1" value="100">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Weight / Boldness <span class="range-value" id="val-clock-weight">700</span></label>
+                                <div class="range-wrapper">
+                                    <input type="range" id="slider-clock-weight" min="100" max="900" step="100" value="700">
+                                </div>
+                            </div>
+                            <div class="font-preview-box" id="preview-box-clock">12:34 PM</div>
+                        </div>
+
+                        <div class="setting-section">
+                            <h3>Greeting</h3>
+                            <div class="form-group">
+                                <select id="select-greeting-font">
+                                    <optgroup label="Sans-Serif">
+                                        <option value="'Inter', system-ui, sans-serif" style="font-family: 'Inter', sans-serif;">Inter</option>
+                                        <option value="'Roboto', sans-serif" style="font-family: 'Roboto', sans-serif;">Roboto</option>
+                                        <option value="'Poppins', sans-serif" style="font-family: 'Poppins', sans-serif;">Poppins</option>
+                                        <option value="'Montserrat', sans-serif" style="font-family: 'Montserrat', sans-serif;">Montserrat</option>
+                                        <option value="'Lato', sans-serif" style="font-family: 'Lato', sans-serif;">Lato</option>
+                                        <option value="'Segoe UI', system-ui, sans-serif" style="font-family: 'Segoe UI', sans-serif;">Segoe UI (System Default)</option>
+                                    </optgroup>
+                                    <optgroup label="Serif">
+                                        <option value="'Playfair Display', serif" style="font-family: 'Playfair Display', serif;">Playfair Display</option>
+                                        <option value="'Merriweather', serif" style="font-family: 'Merriweather', serif;">Merriweather</option>
+                                        <option value="'Lora', serif" style="font-family: 'Lora', serif;">Lora</option>
+                                    </optgroup>
+                                    <optgroup label="Display & Script">
+                                        <option value="'Bebas Neue', display" style="font-family: 'Bebas Neue', display;">Bebas Neue</option>
+                                        <option value="'Oswald', sans-serif" style="font-family: 'Oswald', sans-serif;">Oswald</option>
+                                        <option value="'Pacifico', cursive" style="font-family: 'Pacifico', cursive;">Pacifico</option>
+                                        <option value="'Dancing Script', cursive" style="font-family: 'Dancing Script', cursive;">Dancing Script</option>
+                                    </optgroup>
+                                    <optgroup label="Monospace">
+                                        <option value="'Roboto Mono', monospace" style="font-family: 'Roboto Mono', monospace;">Roboto Mono</option>
+                                        <option value="'Space Mono', monospace" style="font-family: 'Space Mono', monospace;">Space Mono</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Size <span class="range-value" id="val-greeting-size">28px</span></label>
+                                <div class="range-wrapper">
+                                    <input type="range" id="slider-greeting-size" min="16" max="80" step="1" value="28">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Weight / Boldness <span class="range-value" id="val-greeting-weight">300</span></label>
+                                <div class="range-wrapper">
+                                    <input type="range" id="slider-greeting-weight" min="100" max="900" step="100" value="300">
+                                </div>
+                            </div>
+                            <div class="font-preview-box" id="preview-box-greeting">Good morning, Jo!</div>
+                        </div>
+
+                        <div class="setting-section">
+                            <h3>Quotes</h3>
+                            <div class="form-group">
+                                <select id="select-quote-font">
+                                    <optgroup label="Sans-Serif">
+                                        <option value="'Inter', system-ui, sans-serif" style="font-family: 'Inter', sans-serif;">Inter</option>
+                                        <option value="'Roboto', sans-serif" style="font-family: 'Roboto', sans-serif;">Roboto</option>
+                                        <option value="'Poppins', sans-serif" style="font-family: 'Poppins', sans-serif;">Poppins</option>
+                                        <option value="'Montserrat', sans-serif" style="font-family: 'Montserrat', sans-serif;">Montserrat</option>
+                                        <option value="'Lato', sans-serif" style="font-family: 'Lato', sans-serif;">Lato</option>
+                                        <option value="'Segoe UI', system-ui, sans-serif" style="font-family: 'Segoe UI', sans-serif;">Segoe UI (System Default)</option>
+                                    </optgroup>
+                                    <optgroup label="Serif">
+                                        <option value="'Playfair Display', serif" style="font-family: 'Playfair Display', serif;">Playfair Display</option>
+                                        <option value="'Merriweather', serif" style="font-family: 'Merriweather', serif;">Merriweather</option>
+                                        <option value="'Lora', serif" style="font-family: 'Lora', serif;">Lora</option>
+                                    </optgroup>
+                                    <optgroup label="Display & Script">
+                                        <option value="'Bebas Neue', display" style="font-family: 'Bebas Neue', display;">Bebas Neue</option>
+                                        <option value="'Oswald', sans-serif" style="font-family: 'Oswald', sans-serif;">Oswald</option>
+                                        <option value="'Pacifico', cursive" style="font-family: 'Pacifico', cursive;">Pacifico</option>
+                                        <option value="'Dancing Script', cursive" style="font-family: 'Dancing Script', cursive;">Dancing Script</option>
+                                    </optgroup>
+                                    <optgroup label="Monospace">
+                                        <option value="'Roboto Mono', monospace" style="font-family: 'Roboto Mono', monospace;">Roboto Mono</option>
+                                        <option value="'Space Mono', monospace" style="font-family: 'Space Mono', monospace;">Space Mono</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Size <span class="range-value" id="val-quote-size">16px</span></label>
+                                <div class="range-wrapper">
+                                    <input type="range" id="slider-quote-size" min="10" max="40" step="1" value="16">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Weight / Boldness <span class="range-value" id="val-quote-weight">400</span></label>
+                                <div class="range-wrapper">
+                                    <input type="range" id="slider-quote-weight" min="100" max="900" step="100" value="400">
+                                </div>
+                            </div>
+                            <div class="font-preview-box" id="preview-box-quote" style="font-size: 16px;">"The only way to do great work is to love what you do."</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab: Layout & Widgets -->
+                    <div id="tab-layout" class="tab-panel">
+                        <div class="setting-section">
+                            <h3>Glassmorphism UI</h3>
+                            <div class="form-group">
+                                <label>Glass Blur <span class="range-value" id="val-glass-blur">7px</span></label>
+                                <div class="range-wrapper">
+                                    <input type="range" id="slider-glass-blur" min="0" max="100" step="1" value="7">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Glass Opacity <span class="range-value" id="val-glass-opacity">2%</span></label>
+                                <div class="range-wrapper">
+                                    <input type="range" id="slider-glass-opacity" min="0" max="100" step="1" value="2">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Corner Radius <span class="range-value" id="val-glass-radius">32px</span></label>
+                                <div class="range-wrapper">
+                                    <input type="range" id="slider-glass-radius" min="0" max="100" step="1" value="32">
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top: 20px;">
+                                <label>Vertical Alignment</label>
+                                <select id="select-alignment">
+                                    <option value="top">Top</option>
+                                    <option value="center">Center</option>
+                                    <option value="bottom">Bottom</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="setting-section">
+                            <h3>Widgets Visibility</h3>
+                            <div class="toggle-row"><span style="font-size: 13px; color: #bbb;">Show Clock</span><label class="switch"><input type="checkbox" id="toggle-clock" checked><span class="slider"></span></label></div>
+                            <div class="toggle-row"><span style="font-size: 13px; color: #bbb;">Show Greeting</span><label class="switch"><input type="checkbox" id="toggle-greeting" checked><span class="slider"></span></label></div>
+                            <div class="toggle-row"><span style="font-size: 13px; color: #bbb;">Show Search Bar</span><label class="switch"><input type="checkbox" id="toggle-search" checked><span class="slider"></span></label></div>
+                            <div class="toggle-row"><span style="font-size: 13px; color: #bbb;">Show Folders & Apps</span><label class="switch"><input type="checkbox" id="toggle-links" checked><span class="slider"></span></label></div>
+                            <div class="toggle-row"><span style="font-size: 13px; color: #bbb;">Show Daily Quote</span><label class="switch"><input type="checkbox" id="toggle-quotes" checked><span class="slider"></span></label></div>
+                        </div>
+
+                        <div class="setting-section">
+                            <h3>Widget Preferences</h3>
+                            <div class="form-group">
+                                <label>Search Provider</label>
+                                <select id="select-search-provider">
+                                    <option value="google">Google</option>
+                                    <option value="duckduckgo">DuckDuckGo</option>
+                                    <option value="bing">Bing</option>
+                                </select>
+                            </div>
+                            <div class="toggle-row"><span style="font-size: 13px; color: #bbb;">Dynamic Greeting (Time-based)</span><label class="switch"><input type="checkbox" id="toggle-dynamic-greeting" checked><span class="slider"></span></label></div>
+                            <div class="toggle-row"><span style="font-size: 13px; color: #bbb;">24-Hour Clock Format</span><label class="switch"><input type="checkbox" id="toggle-24h"><span class="slider"></span></label></div>
+                            <div class="toggle-row"><span style="font-size: 13px; color: #bbb;">Show Seconds on Clock</span><label class="switch"><input type="checkbox" id="toggle-seconds"><span class="slider"></span></label></div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Links Editor -->
+                    <div id="tab-editor" class="tab-panel">
+                        <div class="editor-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div class="pages-list" id="editor-page-list">
+                                    <!-- Pills injected via JS -->
+                                </div>
+                                <button class="btn btn-secondary btn-sm" onclick="addPage()" style="flex-shrink: 0; margin-left: 10px;"><i class="fas fa-plus"></i></button>
+                            </div>
+
+                            <div class="page-details" id="editor-page-details">
+                                <!-- Editor injected via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="close-settings">Close</button>
+                <button class="btn" id="save-settings">Save & Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. DEFAULT DATA & STATE ---
+        const defaultStyle = {
+            overlayOpacity: 0.3, textShadow: true, globalScale: 0.7,
+            clockFont: "'Oswald', sans-serif", clockSize: 100, clockWeight: 700,
+            greetingFont: "'Playfair Display', serif", greetingSize: 28, greetingWeight: 300,
+            quoteFont: "'Inter', system-ui, sans-serif", quoteSize: 16, quoteWeight: 400,
+            glassBlur: 7, glassOpacity: 2, glassRadius: 32, alignment: 'center'
+        };
+
+        const defaultWidgets = {
+            showClock: true, showGreeting: true, showSearch: true, showLinks: true, showQuotes: true,
+            clockFormat: '12h', showSeconds: false, dynamicGreeting: true, searchProvider: 'google'
+        };
+
+        // Curated Unsplash photo IDs (High Quality)
+        const unsplashCollections = {
+            nature: ["1448375240586-dfd8d3793306", "1472214103451-9374bd1c798e", "1469474968028-56623f02e42e", "1426604966848-d7adac402bff", "1470071131384-001b85755b36", "1447752809965-9268225d2ea6", "1501854140801-50d01698950b"],
+            architecture: ["1486406146926-c627a92ad1ab", "1449844908441-8829872d2607", "1479839672679-a46483c0e7c8", "1511818966892-d7d671fc2752", "1486304873000-235643847519"],
+            minimal: ["1494438639946-1ebd1d20bf85", "1507608616785-3e2e5b080b59", "1490818387583-1b0ba68bbd34", "1513542789411-b6a5d4f31634", "1493612216891-65cbf18dcece"],
+            space: ["1462331940025-496dfbfc7564", "1451187580459-43490279c0fa", "1464802686167-b939a6910659", "1444703686981-a3abbc4d4fe3", "1450806115866-26796c096410"]
+        };
+
+        const defaultData = {
+            name: "Jo", 
+            backgroundType: "unsplash", 
+            unsplashCollection: "nature",
+            backgroundUrl: "https://images.unsplash.com/photo-1448375240586-dfd8d3793306?q=80&w=1920&auto=format&fit=crop",
+            customBgUrls: [
+                "https://images.unsplash.com/photo-1448375240586-dfd8d3793306?q=80&w=1920&auto=format&fit=crop",
+                "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1920&auto=format&fit=crop"
+            ],
+            style: { ...defaultStyle }, widgets: { ...defaultWidgets },
+            pages: [
+                {
+                    icon: "fas fa-home", name: "Personal",
+                    links: [
+                        { name: "YouTube", url: "https://youtube.com", icon: "fab fa-youtube", color: "#ff0000" },
+                        { name: "Reddit", url: "https://reddit.com", icon: "fab fa-reddit", color: "#ff4500" },
+                        { name: "Instagram", url: "https://instagram.com", icon: "fab fa-instagram", color: "#e1306c" },
+                        { name: "Telegram", url: "https://web.telegram.org", icon: "fab fa-telegram-plane", color: "#0088cc" }
+                    ]
+                },
+                {
+                    icon: "fas fa-briefcase", name: "Work",
+                    links: [
+                        { name: "Gmail", url: "https://mail.google.com", icon: "fas fa-envelope", color: "#ea4335" },
+                        { name: "GitHub", url: "https://github.com", icon: "fab fa-github", color: "#ffffff" }
+                    ]
+                }
+            ]
+        };
+
+        const quotes = [
+            { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+            { text: "Life is what happens when you're busy making other plans.", author: "John Lennon" },
+            { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
+            { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
+            { text: "In the end, it's not the years in your life that count. It's the life in your years.", author: "Abraham Lincoln" },
+            { text: "Get busy living or get busy dying.", author: "Stephen King" },
+            { text: "You only live once, but if you do it right, once is enough.", author: "Mae West" }
+        ];
+
+        let appData = defaultData;
+        let draftData = {}; 
+        let editingPageIndex = 0;
+        let localImageDataUrl = null; 
+        let currentPageIndex = 0;
+
+        const availableIcons = [
+            "fas fa-home", "fas fa-briefcase", "fas fa-paint-brush", "fas fa-folder", 
+            "fas fa-gamepad", "fas fa-music", "fas fa-code", "fas fa-book", 
+            "fas fa-globe", "fas fa-heart", "fas fa-star", "fas fa-compass", 
+            "fas fa-camera", "fas fa-film", "fas fa-utensils", "fas fa-shopping-cart"
+        ];
+
+        // --- 2. INDEXEDDB SETUP (For Local Images) ---
+        const dbName = "NewTabDB";
+        let db;
+
+        function initDB(callback) {
+            const request = indexedDB.open(dbName, 1);
+            request.onupgradeneeded = (event) => {
+                db = event.target.result;
+                if (!db.objectStoreNames.contains('images')) db.createObjectStore('images', { keyPath: 'id' });
+            };
+            request.onsuccess = (event) => {
+                db = event.target.result;
+                loadLocalImage(callback);
+            };
+            request.onerror = (e) => console.error("IndexedDB error:", e);
+        }
+
+        function saveLocalImage(dataUrl) {
+            if (!db) return;
+            const transaction = db.transaction(['images'], 'readwrite');
+            transaction.objectStore('images').put({ id: 'customBg', data: dataUrl });
+            localImageDataUrl = dataUrl;
+        }
+
+        function loadLocalImage(callback) {
+            if (!db) return;
+            const request = db.transaction(['images'], 'readonly').objectStore('images').get('customBg');
+            request.onsuccess = () => {
+                if (request.result) localImageDataUrl = request.result.data;
+                if (callback) callback();
+            };
+        }
+
+        // --- 3. DATA LOADING & INITIALIZATION ---
+        function init() {
+            try {
+                // Bumped version string to v5 to force the new defaults
+                const saved = localStorage.getItem("myNewTab_Data_v5");
+                if (saved) {
+                    appData = JSON.parse(saved);
+                    appData.style = { ...defaultStyle, ...appData.style };
+                    appData.widgets = { ...defaultWidgets, ...appData.widgets };
+                }
+            } catch (e) { console.warn("Local storage unavailable."); }
+
+            setRandomQuote();
+            
+            initDB(() => {
+                applyCSSVariables(appData);
+                applyWidgetsVisibility(appData);
+                renderMainUI();
+                startClock();
+                setupEventListeners();
+                setupLivePreviewListeners();
+            });
+        }
+
+        function setRandomQuote() {
+            const q = quotes[Math.floor(Math.random() * quotes.length)];
+            document.getElementById('quote-text').textContent = `"${q.text}"`;
+            document.getElementById('quote-author').textContent = `- ${q.author}`;
+        }
+
+        function getRandomUnsplashUrl(collection) {
+            const ids = unsplashCollections[collection] || unsplashCollections.nature;
+            const randomId = ids[Math.floor(Math.random() * ids.length)];
+            return `https://images.unsplash.com/photo-${randomId}?q=80&w=1920&auto=format&fit=crop`;
+        }
+
+        function processDriveUrl(url) {
+            if (!url) return "";
+            let finalUrl = url.trim();
+            const match = finalUrl.match(/drive\.google\.com\/file\/d\/([^\/]+)/);
+            if (match && match[1]) finalUrl = `https://drive.google.com/uc?export=view&id=${match[1]}`;
+            return finalUrl;
+        }
+
+        // --- 4. CSS ENGINE & VISIBILITY (LIVE STYLING) ---
+        function applyCSSVariables(data) {
+            const root = document.documentElement;
+            
+            if (data.backgroundType === 'local' && localImageDataUrl) {
+                root.style.setProperty('--bg-image', `url(${localImageDataUrl})`);
+            } else if (data.backgroundType === 'unsplash') {
+                root.style.setProperty('--bg-image', `url(${getRandomUnsplashUrl(data.unsplashCollection)})`);
+            } else if (data.backgroundType === 'custom_list' && data.customBgUrls && data.customBgUrls.length > 0) {
+                const randomUrl = data.customBgUrls[Math.floor(Math.random() * data.customBgUrls.length)];
+                root.style.setProperty('--bg-image', `url('${processDriveUrl(randomUrl)}')`);
+            } else {
+                root.style.setProperty('--bg-image', `url('${processDriveUrl(data.backgroundUrl)}')`);
+            }
+            
+            root.style.setProperty('--bg-overlay', `rgba(0, 0, 0, ${data.style.overlayOpacity})`);
+            root.style.setProperty('--text-shadow', data.style.textShadow ? '0 2px 4px rgba(0,0,0,0.3), 0 4px 15px rgba(0,0,0,0.2)' : 'none');
+            root.style.setProperty('--global-scale', data.style.globalScale);
+            
+            root.style.setProperty('--clock-font', data.style.clockFont);
+            root.style.setProperty('--clock-size', `${data.style.clockSize}px`);
+            root.style.setProperty('--clock-weight', data.style.clockWeight);
+            
+            root.style.setProperty('--greeting-font', data.style.greetingFont);
+            root.style.setProperty('--greeting-size', `${data.style.greetingSize}px`);
+            root.style.setProperty('--greeting-weight', data.style.greetingWeight);
+            
+            root.style.setProperty('--quote-font', data.style.quoteFont);
+            root.style.setProperty('--quote-size', `${data.style.quoteSize}px`);
+            root.style.setProperty('--quote-weight', data.style.quoteWeight);
+            
+            // Layout & Glass
+            root.style.setProperty('--glass-bg', `rgba(255, 255, 255, ${data.style.glassOpacity / 100})`);
+            root.style.setProperty('--glass-blur', `${data.style.glassBlur}px`);
+            root.style.setProperty('--glass-radius', `${data.style.glassRadius}px`);
+            root.style.setProperty('--alignment', data.style.alignment === 'top' ? 'flex-start' : (data.style.alignment === 'bottom' ? 'flex-end' : 'center'));
+        }
+
+        function applyWidgetsVisibility(data) {
+            document.getElementById('clock').style.display = data.widgets.showClock ? 'block' : 'none';
+            document.getElementById('greeting').style.display = data.widgets.showGreeting ? 'block' : 'none';
+            document.getElementById('search-wrapper').style.display = data.widgets.showSearch ? 'block' : 'none';
+            document.getElementById('glass-card').style.display = data.widgets.showLinks ? 'flex' : 'none';
+            document.getElementById('quote-container').style.display = data.widgets.showQuotes ? 'block' : 'none';
+            updateTimeDisplay(data); // Force UI update
+        }
+
+        function updateTimeDisplay(data) {
+            const now = new Date();
+            const format = { hour: '2-digit', minute: '2-digit', hour12: data.widgets.clockFormat === '12h' };
+            if(data.widgets.showSeconds) format.second = '2-digit';
+            
+            // en-US locale ensures consistent formatting, toUpperCase ensures AM/PM instead of am/pm
+            document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', format).toUpperCase();
+            
+            if(data.widgets.dynamicGreeting) {
+                const hour = now.getHours();
+                let greet = "Hello";
+                if(hour < 12) greet = "Good morning";
+                else if(hour < 18) greet = "Good afternoon";
+                else greet = "Good evening";
+                document.getElementById('greeting').textContent = `${greet}, ${data.name}!`;
+            } else {
+                document.getElementById('greeting').textContent = `Hello ${data.name}!`;
+            }
+        }
+
+        function startClock() {
+            setInterval(() => updateTimeDisplay(appData), 1000);
+        }
+
+        // --- 5. MAIN UI RENDERING ---
+        function renderMainUI() {
+            const els = { linksContainer: document.getElementById('links-container'), pagesNav: document.getElementById('pages-nav') };
+            if(appData.pages.length === 0) {
+                els.linksContainer.innerHTML = `<div style="grid-column: 1 / -1; color: rgba(255,255,255,0.5);">No folders. Add in settings!</div>`;
+                els.pagesNav.innerHTML = '';
+                return;
+            }
+
+            if (currentPageIndex >= appData.pages.length) currentPageIndex = 0;
+            const currentLinks = appData.pages[currentPageIndex].links;
+            els.linksContainer.innerHTML = currentLinks.map(link => `
+                <a href="${link.url}" class="link-item" target="_parent" title="${link.name}">
+                    <i class="${link.icon}" style="color: ${link.color || 'white'}"></i>
+                </a>
+            `).join('');
+
+            els.pagesNav.innerHTML = appData.pages.map((page, index) => `
+                <div class="page-dot ${index === currentPageIndex ? 'active' : ''}" onclick="changePage(${index})" title="${page.name}"><i class="${page.icon}"></i></div>
+            `).join('');
+        }
+
+        window.changePage = (index) => { currentPageIndex = index; renderMainUI(); };
+
+        // --- 6. SETTINGS MODAL LOGIC ---
+        const ui = {
+            modal: document.getElementById('settings-modal'), inputName: document.getElementById('input-name'),
+            selectBgType: document.getElementById('select-bg-type'), bgUrlSection: document.getElementById('bg-url-section'),
+            bgUnsplashSection: document.getElementById('bg-unsplash-section'), bgLocalSection: document.getElementById('bg-local-section'),
+            bgCustomListSection: document.getElementById('bg-custom-list-section'), inputBgList: document.getElementById('input-bg-list'),
+            selectUnsplashCollection: document.getElementById('select-unsplash-collection'),
+            inputBg: document.getElementById('input-bg'), sliderOverlay: document.getElementById('slider-overlay'),
+            valOverlay: document.getElementById('val-overlay'), toggleShadow: document.getElementById('toggle-shadow'), 
+            sliderScale: document.getElementById('slider-scale'), valScale: document.getElementById('val-scale'), 
+            selectClockFont: document.getElementById('select-clock-font'), sliderClockSize: document.getElementById('slider-clock-size'),
+            valClockSize: document.getElementById('val-clock-size'), sliderClockWeight: document.getElementById('slider-clock-weight'),
+            valClockWeight: document.getElementById('val-clock-weight'), selectGreetingFont: document.getElementById('select-greeting-font'), 
+            sliderGreetingSize: document.getElementById('slider-greeting-size'), valGreetingSize: document.getElementById('val-greeting-size'), 
+            sliderGreetingWeight: document.getElementById('slider-greeting-weight'), valGreetingWeight: document.getElementById('val-greeting-weight'), 
+            selectQuoteFont: document.getElementById('select-quote-font'), sliderQuoteSize: document.getElementById('slider-quote-size'),
+            valQuoteSize: document.getElementById('val-quote-size'), sliderQuoteWeight: document.getElementById('slider-quote-weight'),
+            valQuoteWeight: document.getElementById('val-quote-weight'), sliderGlassBlur: document.getElementById('slider-glass-blur'),
+            valGlassBlur: document.getElementById('val-glass-blur'), sliderGlassOpacity: document.getElementById('slider-glass-opacity'),
+            valGlassOpacity: document.getElementById('val-glass-opacity'), sliderGlassRadius: document.getElementById('slider-glass-radius'),
+            valGlassRadius: document.getElementById('val-glass-radius'), selectAlignment: document.getElementById('select-alignment'),
+            toggleClock: document.getElementById('toggle-clock'), toggleGreeting: document.getElementById('toggle-greeting'),
+            toggleSearch: document.getElementById('toggle-search'), toggleLinks: document.getElementById('toggle-links'),
+            toggleQuotes: document.getElementById('toggle-quotes'), selectSearchProvider: document.getElementById('select-search-provider'),
+            toggleDynamicGreeting: document.getElementById('toggle-dynamic-greeting'), toggle24h: document.getElementById('toggle-24h'),
+            toggleSeconds: document.getElementById('toggle-seconds'), fileInput: document.getElementById('file-input'),
+            uploadZone: document.getElementById('upload-dropzone'), uploadStatus: document.getElementById('upload-status')
+        };
+
+        function updateBgTypeUI() {
+            const type = ui.selectBgType.value;
+            ui.bgUrlSection.style.display = type === 'url' ? 'block' : 'none';
+            ui.bgUnsplashSection.style.display = type === 'unsplash' ? 'block' : 'none';
+            ui.bgLocalSection.style.display = type === 'local' ? 'block' : 'none';
+            ui.bgCustomListSection.style.display = type === 'custom_list' ? 'block' : 'none';
+        }
+
+        function openSettings() {
+            draftData = JSON.parse(JSON.stringify(appData));
+            editingPageIndex = 0;
+            
+            ui.inputName.value = draftData.name;
+            ui.selectBgType.value = draftData.backgroundType || 'unsplash';
+            ui.selectUnsplashCollection.value = draftData.unsplashCollection || 'nature';
+            ui.inputBg.value = draftData.backgroundUrl;
+            ui.inputBgList.value = (draftData.customBgUrls || []).join('\n');
+            updateBgTypeUI();
+            
+            ui.sliderOverlay.value = draftData.style.overlayOpacity * 100; ui.valOverlay.textContent = `${ui.sliderOverlay.value}%`;
+            ui.toggleShadow.checked = draftData.style.textShadow;
+            ui.sliderScale.value = draftData.style.globalScale; ui.valScale.textContent = `${ui.sliderScale.value}x`;
+            
+            ui.selectClockFont.value = draftData.style.clockFont;
+            ui.sliderClockSize.value = draftData.style.clockSize; ui.valClockSize.textContent = `${ui.sliderClockSize.value}px`;
+            ui.sliderClockWeight.value = draftData.style.clockWeight; ui.valClockWeight.textContent = ui.sliderClockWeight.value;
+
+            ui.selectGreetingFont.value = draftData.style.greetingFont;
+            ui.sliderGreetingSize.value = draftData.style.greetingSize; ui.valGreetingSize.textContent = `${ui.sliderGreetingSize.value}px`;
+            ui.sliderGreetingWeight.value = draftData.style.greetingWeight; ui.valGreetingWeight.textContent = ui.sliderGreetingWeight.value;
+
+            ui.selectQuoteFont.value = draftData.style.quoteFont;
+            ui.sliderQuoteSize.value = draftData.style.quoteSize; ui.valQuoteSize.textContent = `${ui.sliderQuoteSize.value}px`;
+            ui.sliderQuoteWeight.value = draftData.style.quoteWeight; ui.valQuoteWeight.textContent = ui.sliderQuoteWeight.value;
+            
+            ui.sliderGlassBlur.value = draftData.style.glassBlur; ui.valGlassBlur.textContent = `${draftData.style.glassBlur}px`;
+            ui.sliderGlassOpacity.value = draftData.style.glassOpacity; ui.valGlassOpacity.textContent = `${draftData.style.glassOpacity}%`;
+            ui.sliderGlassRadius.value = draftData.style.glassRadius; ui.valGlassRadius.textContent = `${draftData.style.glassRadius}px`;
+            ui.selectAlignment.value = draftData.style.alignment;
+
+            // Init Modal Font Previews
+            document.getElementById('preview-box-clock').style.fontFamily = draftData.style.clockFont;
+            document.getElementById('preview-box-clock').style.fontWeight = draftData.style.clockWeight;
+            document.getElementById('preview-box-greeting').style.fontFamily = draftData.style.greetingFont;
+            document.getElementById('preview-box-greeting').style.fontWeight = draftData.style.greetingWeight;
+            document.getElementById('preview-box-quote').style.fontFamily = draftData.style.quoteFont;
+            document.getElementById('preview-box-quote').style.fontWeight = draftData.style.quoteWeight;
+
+            ui.toggleClock.checked = draftData.widgets.showClock;
+            ui.toggleGreeting.checked = draftData.widgets.showGreeting;
+            ui.toggleSearch.checked = draftData.widgets.showSearch;
+            ui.toggleLinks.checked = draftData.widgets.showLinks;
+            ui.toggleQuotes.checked = draftData.widgets.showQuotes;
+            ui.selectSearchProvider.value = draftData.widgets.searchProvider;
+            ui.toggleDynamicGreeting.checked = draftData.widgets.dynamicGreeting;
+            ui.toggle24h.checked = draftData.widgets.clockFormat === '24h';
+            ui.toggleSeconds.checked = draftData.widgets.showSeconds;
+
+            ui.uploadStatus.style.display = 'none';
+            renderEditor(); ui.modal.style.display = 'flex';
+        }
+
+        function closeSettings() { applyCSSVariables(appData); applyWidgetsVisibility(appData); ui.modal.style.display = 'none'; }
+
+        function saveSettings() {
+            // Check Google Drive Links
+            draftData.backgroundUrl = processDriveUrl(ui.inputBg.value);
+            
+            // Process Custom List
+            const urls = ui.inputBgList.value.split('\n').map(u => u.trim()).filter(u => u.length > 0);
+            draftData.customBgUrls = urls;
+            
+            appData = JSON.parse(JSON.stringify(draftData));
+            try { localStorage.setItem("myNewTab_Data_v5", JSON.stringify(appData)); } catch (e) {}
+            
+            applyCSSVariables(appData); applyWidgetsVisibility(appData); renderMainUI(); ui.modal.style.display = 'none';
+        }
+
+        function setupLivePreviewListeners() {
+            const inputs = document.querySelectorAll('#settings-modal input, #settings-modal select');
+            
+            ui.selectBgType.addEventListener('change', () => {
+                draftData.backgroundType = ui.selectBgType.value;
+                updateBgTypeUI();
+                applyCSSVariables(draftData);
+            });
+
+            inputs.forEach(input => {
+                if(input.id === 'select-bg-type') return; // Handled above
+
+                input.addEventListener('input', (e) => {
+                    // Update numeric labels
+                    if (input.id === 'slider-overlay') ui.valOverlay.textContent = `${input.value}%`;
+                    if (input.id === 'slider-scale') ui.valScale.textContent = `${input.value}x`;
+                    if (input.id === 'slider-clock-size') ui.valClockSize.textContent = `${input.value}px`;
+                    if (input.id === 'slider-clock-weight') ui.valClockWeight.textContent = input.value;
+                    if (input.id === 'slider-greeting-size') ui.valGreetingSize.textContent = `${input.value}px`;
+                    if (input.id === 'slider-greeting-weight') ui.valGreetingWeight.textContent = input.value;
+                    if (input.id === 'slider-quote-size') ui.valQuoteSize.textContent = `${input.value}px`;
+                    if (input.id === 'slider-quote-weight') ui.valQuoteWeight.textContent = input.value;
+                    if (input.id === 'slider-glass-blur') ui.valGlassBlur.textContent = `${input.value}px`;
+                    if (input.id === 'slider-glass-opacity') ui.valGlassOpacity.textContent = `${input.value}%`;
+                    if (input.id === 'slider-glass-radius') ui.valGlassRadius.textContent = `${input.value}px`;
+
+                    // Update Modal Font Previews
+                    document.getElementById('preview-box-clock').style.fontFamily = ui.selectClockFont.value;
+                    document.getElementById('preview-box-clock').style.fontWeight = ui.sliderClockWeight.value;
+                    document.getElementById('preview-box-greeting').style.fontFamily = ui.selectGreetingFont.value;
+                    document.getElementById('preview-box-greeting').style.fontWeight = ui.sliderGreetingWeight.value;
+                    document.getElementById('preview-box-quote').style.fontFamily = ui.selectQuoteFont.value;
+                    document.getElementById('preview-box-quote').style.fontWeight = ui.sliderQuoteWeight.value;
+
+                    // Synchronize state
+                    draftData.name = ui.inputName.value;
+                    draftData.unsplashCollection = ui.selectUnsplashCollection.value;
+                    draftData.backgroundUrl = ui.inputBg.value;
+                    draftData.customBgUrls = ui.inputBgList.value.split('\n').map(u => u.trim()).filter(u => u.length > 0);
+                    draftData.style = {
+                        overlayOpacity: parseInt(ui.sliderOverlay.value) / 100,
+                        textShadow: ui.toggleShadow.checked, globalScale: parseFloat(ui.sliderScale.value),
+                        clockFont: ui.selectClockFont.value, clockSize: parseInt(ui.sliderClockSize.value), clockWeight: parseInt(ui.sliderClockWeight.value),
+                        greetingFont: ui.selectGreetingFont.value, greetingSize: parseInt(ui.sliderGreetingSize.value), greetingWeight: parseInt(ui.sliderGreetingWeight.value),
+                        quoteFont: ui.selectQuoteFont.value, quoteSize: parseInt(ui.sliderQuoteSize.value), quoteWeight: parseInt(ui.sliderQuoteWeight.value),
+                        glassBlur: parseInt(ui.sliderGlassBlur.value), glassOpacity: parseInt(ui.sliderGlassOpacity.value),
+                        glassRadius: parseInt(ui.sliderGlassRadius.value), alignment: ui.selectAlignment.value
+                    };
+                    draftData.widgets = {
+                        showClock: ui.toggleClock.checked, showGreeting: ui.toggleGreeting.checked, showSearch: ui.toggleSearch.checked,
+                        showLinks: ui.toggleLinks.checked, showQuotes: ui.toggleQuotes.checked, searchProvider: ui.selectSearchProvider.value,
+                        dynamicGreeting: ui.toggleDynamicGreeting.checked, clockFormat: ui.toggle24h.checked ? '24h' : '12h',
+                        showSeconds: ui.toggleSeconds.checked
+                    };
+                    
+                    applyCSSVariables(draftData);
+                    applyWidgetsVisibility(draftData);
+                });
+            });
+        }
+
+        function handleImageUpload(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                saveLocalImage(e.target.result);
+                draftData.backgroundType = 'local';
+                ui.selectBgType.value = 'local';
+                updateBgTypeUI();
+                ui.inputBg.value = '';
+                ui.uploadStatus.style.display = 'block'; 
+                applyCSSVariables(draftData);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // --- 7. EDITOR RENDERERS ---
+        function renderEditor() {
+            const pageList = document.getElementById('editor-page-list');
+            const pageDetails = document.getElementById('editor-page-details');
+
+            pageList.innerHTML = draftData.pages.map((page, index) => `
+                <div class="page-pill ${index === editingPageIndex ? 'active' : ''}" onclick="selectPageForEdit(${index})"><i class="${page.icon}"></i> ${page.name}</div>
+            `).join('');
+
+            if (draftData.pages.length === 0) {
+                pageDetails.innerHTML = `<div style="text-align:center; padding: 30px; color:#888;">No folders. Add one!</div>`;
+                return;
+            }
+
+            const page = draftData.pages[editingPageIndex];
+            const iconGridHtml = availableIcons.map(icon => `
+                <div class="icon-option ${page.icon === icon ? 'selected' : ''}" onclick="updatePageField('icon', '${icon}')" title="${icon}"><i class="${icon}"></i></div>
+            `).join('');
+
+            let html = `
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" value="${page.name}" onchange="updatePageField('name', this.value)" style="flex-grow:1; padding:10px; background:#1a1a1a; border:1px solid #444; color:white; border-radius:6px; font-weight: 600;">
+                        <button class="btn-icon danger" onclick="deletePage()" title="Delete Folder"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <div><label style="font-size: 12px; color: #bbb;">Folder Icon:</label><div class="icon-grid">${iconGridHtml}</div></div>
+                </div>
+                <div style="border-top: 1px solid #333; margin: 15px 0;"></div>
+            `;
+
+            html += page.links.map((link, lIndex) => `
+                <div class="link-edit-card">
+                    <div class="color-col"><label>Color</label><input type="color" value="${link.color}" onchange="updateLinkField(${lIndex}, 'color', this.value)"></div>
+                    <div class="link-fields">
+                        <input type="text" placeholder="App Name" value="${link.name}" onchange="updateLinkField(${lIndex}, 'name', this.value)">
+                        <input type="text" placeholder="URL" value="${link.url}" onchange="updateLinkField(${lIndex}, 'url', this.value)">
+                        <input type="text" placeholder="Icon (e.g. fab fa-youtube)" value="${link.icon}" onchange="updateLinkField(${lIndex}, 'icon', this.value)" style="grid-column: 1 / -1;">
+                    </div>
+                    <button class="btn-icon danger" onclick="deleteLink(${lIndex})"><i class="fas fa-times"></i></button>
+                </div>
+            `).join('');
+
+            html += `<button class="btn btn-secondary btn-sm" style="width:100%; margin-top:10px;" onclick="addLink()"><i class="fas fa-plus"></i> Add App</button>`;
+            pageDetails.innerHTML = html;
+        }
+
+        window.selectPageForEdit = (idx) => { editingPageIndex = idx; renderEditor(); };
+        window.updatePageField = (f, v) => { draftData.pages[editingPageIndex][f] = v; renderEditor(); };
+        window.updateLinkField = (idx, f, v) => { draftData.pages[editingPageIndex].links[idx][f] = v; };
+        window.addPage = () => { draftData.pages.push({ name: "New Folder", icon: "fas fa-folder", links: [] }); editingPageIndex = draftData.pages.length - 1; renderEditor(); };
+        window.deletePage = () => { draftData.pages.splice(editingPageIndex, 1); editingPageIndex = Math.max(0, editingPageIndex - 1); renderEditor(); };
+        window.addLink = () => { draftData.pages[editingPageIndex].links.push({ name: "New App", url: "https://", icon: "fas fa-link", color: "#ffffff" }); renderEditor(); };
+        window.deleteLink = (idx) => { draftData.pages[editingPageIndex].links.splice(idx, 1); renderEditor(); };
+
+        // --- 8. EVENT LISTENERS ---
+        function setupEventListeners() {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+                });
+            });
+
+            ui.uploadZone.addEventListener('click', () => ui.fileInput.click());
+            ui.fileInput.addEventListener('change', (e) => handleImageUpload(e.target.files[0]));
+            ui.uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); ui.uploadZone.style.borderColor = '#0078d7'; });
+            ui.uploadZone.addEventListener('dragleave', () => { ui.uploadZone.style.borderColor = '#444'; });
+            ui.uploadZone.addEventListener('drop', (e) => { e.preventDefault(); ui.uploadZone.style.borderColor = '#444'; if (e.dataTransfer.files.length) handleImageUpload(e.dataTransfer.files[0]); });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
+                    document.getElementById('search-input').focus();
+                }
+            });
+
+            document.getElementById('search-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const q = document.getElementById('search-input').value;
+                if(q.trim() !== "") { 
+                    let url = "https://www.google.com/search?q=";
+                    if(appData.widgets.searchProvider === 'duckduckgo') url = "https://duckduckgo.com/?q=";
+                    if(appData.widgets.searchProvider === 'bing') url = "https://www.bing.com/search?q=";
+                    window.open(url + encodeURIComponent(q), '_blank'); 
+                    document.getElementById('search-input').value = ''; 
+                }
+            });
+
+            document.getElementById('settings-btn').addEventListener('click', openSettings);
+            document.getElementById('close-settings').addEventListener('click', closeSettings);
+            document.getElementById('close-settings-x').addEventListener('click', closeSettings);
+            document.getElementById('save-settings').addEventListener('click', saveSettings);
+        }
+
+        init();
+    </script>
+</body>
+</html>
