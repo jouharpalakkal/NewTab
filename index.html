@@ -986,7 +986,11 @@
         // Initialize Supabase Client
         let supabaseClient;
         if (SUPABASE_URL !== 'YOUR_SUPABASE_PROJECT_URL') {
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            try {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } catch (e) {
+                console.warn("Supabase initialization failed. Check credentials or key format.", e);
+            }
         } else {
             console.warn("Supabase credentials missing. Running in local-only mode.");
         }
@@ -1111,15 +1115,20 @@
             imgReq.onsuccess = () => { if (imgReq.result) localImageDataUrl = imgReq.result.data; checkDone(); };
             imgReq.onerror = checkDone;
 
-            const fontReq = localDb.transaction(['fonts'], 'readonly').objectStore('fonts').get('customFont');
-            fontReq.onsuccess = () => { 
-                if (fontReq.result) {
-                    localFontDataUrl = fontReq.result.data;
-                    applyCustomFontToDOM(localFontDataUrl);
-                }
-                checkDone(); 
-            };
-            fontReq.onerror = checkDone;
+            // Handle case where font store might be missing or empty gracefully
+            try {
+                const fontReq = localDb.transaction(['fonts'], 'readonly').objectStore('fonts').get('customFont');
+                fontReq.onsuccess = () => { 
+                    if (fontReq.result) {
+                        localFontDataUrl = fontReq.result.data;
+                        applyCustomFontToDOM(localFontDataUrl);
+                    }
+                    checkDone(); 
+                };
+                fontReq.onerror = checkDone;
+            } catch (e) {
+                checkDone();
+            }
         }
 
         function applyCustomFontToDOM(dataUrl) {
@@ -1250,6 +1259,7 @@
             let finalUrl = url.trim();
             
             // Match standard /file/d/ID/view or open?id=ID formats
+            // Improved regex to handle various query params like ?usp=drive_link
             const match = finalUrl.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
             if (match && match[1]) {
                 finalUrl = `https://lh3.googleusercontent.com/d/${match[1]}`;
