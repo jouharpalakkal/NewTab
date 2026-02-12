@@ -42,6 +42,7 @@
             --glass-blur: 3px;
             --glass-radius: 32px;
             --alignment: center;
+            --card-gap: clamp(15px, 4vw, 25px); /* New uniform spacing variable */
         }
 
         * { box-sizing: border-box; outline: none; }
@@ -168,14 +169,13 @@
             border-top: 1px solid rgba(255,255,255,0.3);
             border-left: 1px solid rgba(255,255,255,0.3);
             border-radius: var(--glass-radius);
-            padding: clamp(20px, 5vw, 35px); 
+            padding: var(--card-gap); 
             width: 100%;
             max-width: 380px;
             height: auto;
-            min-height: calc(160px * Math.max(0.8, var(--global-scale)));
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: center;
             box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(255,255,255,0.05);
             transition: all 0.3s ease;
         }
@@ -184,10 +184,9 @@
         .links-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: clamp(10px, 3vw, 20px) clamp(8px, 2vw, 15px);
+            gap: var(--card-gap);
             justify-items: center;
             align-content: start;
-            flex-grow: 1;
         }
 
         .link-item {
@@ -213,15 +212,22 @@
             font-size: clamp(20px, 5vw, calc(24px * var(--global-scale)));
             text-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
+        .link-item img {
+            width: 60%;
+            height: 60%;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            border-radius: 6px;
+        }
 
         /* Folder/Page Pagination */
         .pages-nav {
             display: flex;
             justify-content: center;
-            gap: 25px;
-            padding-top: 15px;
+            gap: var(--card-gap);
+            padding-top: var(--card-gap);
             border-top: 1px solid rgba(255,255,255,0.1);
-            margin-top: 10px;
+            margin-top: var(--card-gap);
         }
         .page-dot {
             cursor: pointer;
@@ -466,8 +472,7 @@
         }
         
         @media (max-width: 400px) {
-            .links-grid { gap: 10px 5px; }
-            .glass-card { padding: 15px; border-radius: calc(var(--glass-radius) * 0.8); }
+            .glass-card { border-radius: calc(var(--glass-radius) * 0.8); }
         }
     </style>
 </head>
@@ -561,13 +566,14 @@
                             <div id="bg-url-section" class="form-group" style="display: none;">
                                 <label>Image URL</label>
                                 <input type="text" id="input-bg" placeholder="https://...">
+                                <small style="color:#888; display:block; margin-top:5px;">If using Google Drive, the file MUST be set to "Anyone with the link can view".</small>
                             </div>
 
                             <!-- Custom URL List -->
                             <div id="bg-custom-list-section" class="form-group" style="display: none;">
                                 <label>Custom Image URLs (One per line)</label>
                                 <textarea id="input-bg-list" style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 6px; font-family: monospace; font-size: 12px; resize: vertical;" rows="5" placeholder="https://imgbb.com/...&#10;https://drive.google.com/..."></textarea>
-                                <small style="color:#888; display:block; margin-top:5px;">Paste direct links or Google Drive links here. A random one will be chosen every time you open a new tab.</small>
+                                <small style="color:#888; display:block; margin-top:5px;">Paste direct links or Google Drive links here. <strong>Drive files MUST be set to "Anyone with the link can view"</strong>.</small>
                             </div>
                             
                             <!-- Local Upload Area -->
@@ -939,8 +945,8 @@
         // --- 3. DATA LOADING & INITIALIZATION ---
         function init() {
             try {
-                // Bumped version string to v6 to force the new defaults
-                const saved = localStorage.getItem("myNewTab_Data_v6");
+                // Bumped version string to v7 to clear cache and force auto-fetch default icons
+                const saved = localStorage.getItem("myNewTab_Data_v7");
                 if (saved) {
                     appData = JSON.parse(saved);
                     appData.style = { ...defaultStyle, ...appData.style };
@@ -975,8 +981,13 @@
         function processDriveUrl(url) {
             if (!url) return "";
             let finalUrl = url.trim();
-            const match = finalUrl.match(/drive\.google\.com\/file\/d\/([^\/]+)/);
-            if (match && match[1]) finalUrl = `https://drive.google.com/uc?export=view&id=${match[1]}`;
+            
+            // Match standard /file/d/ID/view or open?id=ID formats
+            const match = finalUrl.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                // Use Google's reliable image delivery server (lh3) instead of the restricted 'uc' endpoint
+                finalUrl = `https://lh3.googleusercontent.com/d/${match[1]}`;
+            }
             return finalUrl;
         }
 
@@ -1074,7 +1085,8 @@
                     } catch(e) {}
                     
                     if (domain) {
-                        iconHtml = `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=128" alt="${link.name}" style="width: 55%; height: 55%; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); border-radius: 4px;">`;
+                        // Use Google Favicon API. If it fails, fallback to FontAwesome globe
+                        iconHtml = `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=128" alt="${link.name}" onerror="this.outerHTML='<i class=&quot;fas fa-globe&quot; style=&quot;color: ${link.color || 'white'}&quot;></i>'">`;
                     } else {
                         iconHtml = `<i class="fas fa-globe" style="color: ${link.color || 'white'}"></i>`;
                     }
@@ -1196,7 +1208,7 @@
             draftData.customBgUrls = urls;
             
             appData = JSON.parse(JSON.stringify(draftData));
-            try { localStorage.setItem("myNewTab_Data_v6", JSON.stringify(appData)); } catch (e) {}
+            try { localStorage.setItem("myNewTab_Data_v7", JSON.stringify(appData)); } catch (e) {}
             
             applyCSSVariables(appData); applyWidgetsVisibility(appData); renderMainUI(); ui.modal.style.display = 'none';
         }
