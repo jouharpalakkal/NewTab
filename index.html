@@ -4,29 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ultimate Custom New Tab</title>
-    <!-- Preconnect to Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Load selected Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Dancing+Script:wght@400;700&family=Inter:wght@200;300;400;600;700&family=Lato:wght@300;400;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Merriweather:wght@300;400;700&family=Montserrat:wght@200;300;400;600;700&family=Oswald:wght@300;400;600;700&family=Pacifico&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@200;300;400;600;700&family=Roboto+Mono:wght@200;300;400;600&family=Roboto:wght@300;400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        /* --- DYNAMIC CSS VARIABLES (Controlled by JS) --- */
         :root {
-            /* Theme */
             --bg-color: #1a1a1a;
             --bg-overlay: rgba(0, 0, 0, 0.3);
-            
-            /* Typography */
             --text-color: #ffffff;
             --text-shadow: 0 2px 4px rgba(0,0,0,0.3), 0 4px 15px rgba(0,0,0,0.2);
             --global-scale: 0.7;
             
-            /* Individual Typography */
             --clock-font: 'Oswald', sans-serif;
             --clock-size: 100px;
             --clock-weight: 700;
@@ -39,7 +30,6 @@
             --quote-size: 16px;
             --quote-weight: 400;
             
-            /* Glassmorphism & Layout */
             --glass-bg: rgba(255, 255, 255, 0.02);
             --glass-blur: 3px;
             --glass-radius: 32px;
@@ -63,7 +53,6 @@
             overflow-y: auto; 
         }
 
-        /* Dual Background Layers for Crossfade */
         .bg-layer {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -72,13 +61,10 @@
             background-attachment: fixed;
             z-index: -2;
             opacity: 0;
-            transition: opacity 1.2s ease-in-out; /* 1.2s Fade Mix */
+            transition: opacity 1.2s ease-in-out;
         }
-        .bg-layer.active {
-            opacity: 1;
-        }
+        .bg-layer.active { opacity: 1; }
 
-        /* Dark Overlay */
         body::before {
             content: '';
             position: fixed; 
@@ -88,13 +74,11 @@
             transition: background 0.3s ease;
         }
         
-        /* UI Hiding Logic */
         .hide-ui .container, .hide-ui #quote-container, .hide-ui #bottom-left-controls {
             opacity: 0 !important;
             pointer-events: none !important;
         }
 
-        /* Top Left Controls */
         #top-left-controls {
             position: fixed;
             top: clamp(20px, 3vw, 40px);
@@ -104,7 +88,6 @@
             z-index: 10;
         }
 
-        /* Bottom Left Controls */
         #bottom-left-controls {
             position: fixed;
             bottom: clamp(20px, 3vw, 40px);
@@ -123,15 +106,9 @@
             color: white;
             text-shadow: 0 1px 5px rgba(0,0,0,0.5);
         }
-        .control-btn:hover { 
-            opacity: 1; 
-            transform: scale(1.15); 
-        }
-        #settings-btn:hover { 
-            transform: rotate(90deg) scale(1.15); 
-        }
+        .control-btn:hover { opacity: 1; transform: scale(1.15); }
+        #settings-btn:hover { transform: rotate(90deg) scale(1.15); }
 
-        /* Main Container */
         .container {
             flex-grow: 1;
             text-align: center;
@@ -145,7 +122,6 @@
             transition: opacity 0.5s ease;
         }
 
-        /* Clock & Greeting */
         #clock { 
             font-family: var(--clock-font);
             font-size: clamp(3rem, 18vw, calc(var(--clock-size) * var(--global-scale))); 
@@ -169,7 +145,6 @@
             word-break: break-word;
         }
 
-        /* Search Bar */
         .search-wrapper {
             width: 90%;
             max-width: 320px;
@@ -190,16 +165,9 @@
             text-shadow: var(--text-shadow);
             letter-spacing: 0.5px;
         }
-        .search-wrapper input::placeholder { 
-            color: rgba(255,255,255,0.5); 
-            font-weight: 300;
-        }
-        .search-wrapper input:focus { 
-            border-bottom-color: rgba(255,255,255,0.9); 
-            background: rgba(255,255,255,0.03);
-        }
+        .search-wrapper input::placeholder { color: rgba(255,255,255,0.5); font-weight: 300; }
+        .search-wrapper input:focus { border-bottom-color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.03); }
 
-        /* Glassy Card (Folders) */
         .glass-card {
             background: var(--glass-bg);
             backdrop-filter: blur(var(--glass-blur));
@@ -219,7 +187,6 @@
             transition: all 0.3s ease;
         }
 
-        /* App-style Link Icons Grid */
         .links-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -242,15 +209,8 @@
             border-radius: calc(16px * var(--global-scale));
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        .link-item:hover { 
-            transform: translateY(-4px) scale(1.05); 
-            opacity: 1;
-            background: rgba(255,255,255,0.25);
-        }
-        .link-item i {
-            font-size: clamp(20px, 5vw, calc(24px * var(--global-scale)));
-            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+        .link-item:hover { transform: translateY(-4px) scale(1.05); opacity: 1; background: rgba(255,255,255,0.25); }
+        .link-item i { font-size: clamp(20px, 5vw, calc(24px * var(--global-scale))); text-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .link-item img {
             width: 60%;
             height: 60%;
@@ -259,7 +219,6 @@
             border-radius: 6px;
         }
 
-        /* Folder/Page Pagination */
         .pages-nav {
             display: flex;
             justify-content: center;
@@ -269,159 +228,73 @@
             margin-top: var(--card-gap);
         }
         .page-dot {
-            cursor: pointer;
-            opacity: 0.3;
-            transition: all 0.3s;
+            cursor: pointer; opacity: 0.3; transition: all 0.3s;
             font-size: calc(22px * var(--global-scale));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 5px;
-            text-shadow: var(--text-shadow);
+            display: flex; align-items: center; justify-content: center;
+            padding: 5px; text-shadow: var(--text-shadow);
         }
-        .page-dot:hover, .page-dot.active { 
-            opacity: 1; 
-            transform: scale(1.1); 
-            text-shadow: 0 0 10px rgba(255,255,255,0.6);
-        }
+        .page-dot:hover, .page-dot.active { opacity: 1; transform: scale(1.1); text-shadow: 0 0 10px rgba(255,255,255,0.6); }
 
-        /* Daily Quote Widget */
         #quote-container {
-            margin-top: auto; 
-            padding-top: 40px;
-            text-align: center;
-            max-width: 600px;
-            opacity: 0.85;
-            transition: opacity 0.5s ease;
+            margin-top: auto; padding-top: 40px; text-align: center;
+            max-width: 600px; opacity: 0.85; transition: opacity 0.5s ease;
         }
         #quote-text {
             font-family: var(--quote-font);
             font-size: max(0.9rem, calc(var(--quote-size) * var(--global-scale)));
-            font-weight: var(--quote-weight);
-            font-style: italic;
-            margin-bottom: 8px;
-            text-shadow: var(--text-shadow);
-            transition: font-size 0.2s, font-weight 0.2s;
+            font-weight: var(--quote-weight); font-style: italic; margin-bottom: 8px;
+            text-shadow: var(--text-shadow); transition: font-size 0.2s, font-weight 0.2s;
         }
         #quote-author {
             font-family: var(--quote-font);
             font-size: max(0.7rem, calc((var(--quote-size) * 0.75) * var(--global-scale)));
-            font-weight: 600;
-            text-shadow: var(--text-shadow);
-            letter-spacing: 0.5px;
-            transition: font-size 0.2s;
+            font-weight: 600; text-shadow: var(--text-shadow); letter-spacing: 0.5px; transition: font-size 0.2s;
         }
 
-        /* --- SETTINGS MODAL UI --- */
         #settings-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            padding: 20px;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            z-index: 1000; justify-content: center; align-items: center; font-family: 'Segoe UI', system-ui, sans-serif; padding: 20px;
         }
         .settings-content {
-            background: #1e1e1e;
-            padding: 25px;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 800px;
-            height: 85vh;
-            max-height: 800px;
-            color: #fff;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            border: 1px solid #333;
+            background: #1e1e1e; padding: 25px; border-radius: 16px;
+            width: 100%; max-width: 800px; height: 85vh; max-height: 800px;
+            color: #fff; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; border: 1px solid #333;
         }
-        
-        .settings-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
+        .settings-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
         .settings-header h2 { margin: 0; font-size: 22px; font-weight: 600; }
-
-        .settings-layout {
-            display: flex;
-            flex-grow: 1;
-            gap: 20px;
-            overflow: hidden;
-        }
-
-        /* Left Sidebar Nav */
+        .settings-layout { display: flex; flex-grow: 1; gap: 20px; overflow: hidden; }
         .settings-sidebar {
-            width: 200px;
-            background: #252525;
-            border-radius: 8px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            border: 1px solid #333;
-            flex-shrink: 0;
-            overflow-y: auto;
+            width: 200px; background: #252525; border-radius: 8px; padding: 10px;
+            display: flex; flex-direction: column; gap: 5px; border: 1px solid #333; flex-shrink: 0; overflow-y: auto;
         }
         .nav-btn {
-            background: transparent;
-            color: #aaa;
-            border: none;
-            padding: 12px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            text-align: left;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            background: transparent; color: #aaa; border: none; padding: 12px 15px;
+            border-radius: 6px; cursor: pointer; font-size: 14px; text-align: left;
+            transition: all 0.2s; display: flex; align-items: center; gap: 10px;
         }
         .nav-btn:hover { background: #333; color: white; }
         .nav-btn.active { background: #0078d7; color: white; }
-
-        /* Right Content Area */
-        .settings-panels {
-            flex-grow: 1;
-            background: #252525;
-            border-radius: 8px;
-            padding: 20px;
-            border: 1px solid #333;
-            overflow-y: auto;
-        }
-        
+        .settings-panels { flex-grow: 1; background: #252525; border-radius: 8px; padding: 20px; border: 1px solid #333; overflow-y: auto; }
         .tab-panel { display: none; }
         .tab-panel.active { display: block; animation: fadeIn 0.2s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Form Controls */
         .setting-section { margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #333; }
         .setting-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .setting-section h3 { margin-top: 0; margin-bottom: 15px; font-size: 16px; color: #ddd; }
-        
         .form-group { margin-bottom: 15px; }
         .form-group label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: #bbb; }
         .form-group input[type="text"], .form-group select {
             width: 100%; padding: 10px 12px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 6px; font-family: inherit; font-size: 14px;
         }
         .form-group input[type="text"]:focus, .form-group select:focus { border-color: #0078d7; }
-        
-        /* Sliders */
         .range-wrapper { display: flex; align-items: center; gap: 15px; }
         input[type="range"] { flex-grow: 1; -webkit-appearance: none; height: 4px; background: #444; border-radius: 2px; outline: none; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #0078d7; cursor: pointer; transition: transform 0.1s; }
         input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
         .range-value { font-size: 12px; color: #888; width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
-
-        /* Toggles */
         .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -429,53 +302,20 @@
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: #0078d7; }
         input:checked + .slider:before { transform: translateX(20px); }
-
-        /* File Upload Area */
-        .upload-area {
-            border: 2px dashed #444; border-radius: 8px; padding: 20px; text-align: center; background: #1a1a1a; cursor: pointer; transition: all 0.2s; margin-top: 10px;
-        }
+        .upload-area { border: 2px dashed #444; border-radius: 8px; padding: 20px; text-align: center; background: #1a1a1a; cursor: pointer; transition: all 0.2s; margin-top: 10px; }
         .upload-area:hover { border-color: #0078d7; background: #222; }
         .upload-area i { font-size: 24px; color: #888; margin-bottom: 10px; }
         .upload-area p { margin: 0; font-size: 13px; color: #bbb; }
         #file-input, #font-file-input { display: none; }
-
-        /* Icon Picker */
-        .icon-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 6px;
-            background: #1a1a1a; padding: 12px; border-radius: 8px; border: 1px solid #444; margin-top: 5px;
-        }
-        .icon-option {
-            width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
-            background: #252525; border: 1px solid #333; border-radius: 6px; cursor: pointer; color: #aaa; transition: all 0.2s; font-size: 14px;
-        }
+        .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 6px; background: #1a1a1a; padding: 12px; border-radius: 8px; border: 1px solid #444; margin-top: 5px; }
+        .icon-option { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; background: #252525; border: 1px solid #333; border-radius: 6px; cursor: pointer; color: #aaa; transition: all 0.2s; font-size: 14px; }
         .icon-option:hover { background: #333; color: white; border-color: #555; }
         .icon-option.selected { background: #0078d7; color: white; border-color: #0078d7; box-shadow: 0 0 10px rgba(0, 120, 215, 0.5); }
-
-        /* Font Preview Box */
-        .font-preview-box {
-            margin-top: 10px;
-            padding: 15px;
-            background: #151515;
-            border: 1px dashed #444;
-            border-radius: 6px;
-            text-align: center;
-            font-size: 26px;
-            color: white;
-            transition: font-family 0.2s, font-weight 0.2s;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
-
-        /* Editor specific layout */
+        .font-preview-box { margin-top: 10px; padding: 15px; background: #151515; border: 1px dashed #444; border-radius: 6px; text-align: center; font-size: 26px; color: white; transition: font-family 0.2s, font-weight 0.2s; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
         .editor-container { display: flex; gap: 15px; height: 100%; flex-direction: column; }
         .pages-list { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
-        .page-pill { 
-            padding: 8px 15px; background: #1a1a1a; border: 1px solid #444; border-radius: 20px; 
-            cursor: pointer; font-size: 13px; white-space: nowrap; display: flex; align-items: center; gap: 8px;
-        }
+        .page-pill { padding: 8px 15px; background: #1a1a1a; border: 1px solid #444; border-radius: 20px; cursor: pointer; font-size: 13px; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
         .page-pill.active { background: rgba(0, 120, 215, 0.2); border-color: #0078d7; color: white; }
-        
         .page-details { background: #1a1a1a; border-radius: 8px; padding: 15px; border: 1px solid #333; flex-grow: 1; overflow-y: auto;}
         .link-edit-card { background: #252525; border: 1px solid #444; border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
         .link-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex-grow: 1; }
@@ -483,8 +323,6 @@
         .color-col { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 40px;}
         .color-col label { font-size: 10px; margin: 0; color: #888;}
         .color-col input[type="color"] { padding: 0; border: none; width: 24px; height: 24px; cursor: pointer; background: transparent; }
-
-        /* Buttons */
         .btn-icon { background: none; border: none; color: #888; cursor: pointer; font-size: 16px; padding: 5px; transition: color 0.2s; }
         .btn-icon:hover { color: white; }
         .btn-icon.danger:hover { color: #ff4d4d; }
@@ -507,85 +345,56 @@
             .settings-panels { padding: 15px; }
             .link-fields { grid-template-columns: 1fr; }
             .range-wrapper { flex-wrap: wrap; }
-            
             #top-left-controls { top: 20px; left: 20px; }
             #bottom-left-controls { bottom: 20px; left: 20px; }
             .control-btn { font-size: 14px; }
         }
-        
         @media (max-width: 400px) {
             .glass-card { border-radius: calc(var(--glass-radius) * 0.8); }
         }
 
-        /* Toast Notification */
         #toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #0078d7;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.3s, transform 0.3s;
-            pointer-events: none;
-            z-index: 9999;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: fixed; bottom: 20px; right: 20px; background: #0078d7; color: white;
+            padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;
+            opacity: 0; transform: translateY(20px); transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none; z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
-        #toast.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        #toast.show { opacity: 1; transform: translateY(0); }
     </style>
 </head>
 <body>
 
-    <!-- Toast Notification -->
     <div id="toast">Message here</div>
-
-    <!-- Background Layers for Crossfade -->
     <div id="bg-layer-1" class="bg-layer active"></div>
     <div id="bg-layer-2" class="bg-layer"></div>
 
-    <!-- Top Left UI Controls -->
     <div id="top-left-controls">
         <div id="settings-btn" class="control-btn" title="Settings"><i class="fas fa-cog"></i></div>
         <div id="toggle-ui-btn" class="control-btn" title="Hide/Unhide Interface"><i class="fas fa-eye"></i></div>
     </div>
 
-    <!-- Bottom Left UI Controls -->
     <div id="bottom-left-controls">
         <div id="prev-bg-btn" class="control-btn" title="Previous Wallpaper"><i class="fas fa-chevron-left"></i></div>
         <div id="play-bg-btn" class="control-btn" title="Start 3s Slideshow (Right Click for Speed)"><i class="fas fa-play"></i></div>
         <div id="next-bg-btn" class="control-btn" title="Next Wallpaper"><i class="fas fa-chevron-right"></i></div>
     </div>
 
-    <!-- Main Content -->
     <div class="container">
-        <!-- Text Group -->
         <div id="clock-container">
             <h1 id="clock">12:00 PM</h1>
             <div id="greeting">Hello Jo!</div>
         </div>
-
-        <!-- Search -->
         <div class="search-wrapper" id="search-wrapper">
             <form id="search-form">
                 <input type="text" id="search-input" placeholder="Type to search..." autocomplete="off">
             </form>
         </div>
-
-        <!-- Glass Folder -->
         <div class="glass-card" id="glass-card">
             <div class="links-grid" id="links-container"></div>
             <div class="pages-nav" id="pages-nav"></div>
         </div>
     </div>
     
-    <!-- Daily Quote Widget -->
     <div id="quote-container">
         <div id="quote-text">"Loading quote..."</div>
         <div id="quote-author"></div>
@@ -598,9 +407,7 @@
                 <h2>Settings</h2>
                 <button class="btn-icon" id="close-settings-x"><i class="fas fa-times"></i></button>
             </div>
-
             <div class="settings-layout">
-                <!-- Sidebar Nav -->
                 <div class="settings-sidebar">
                     <button class="nav-btn active" data-tab="general"><i class="fas fa-image"></i> Background</button>
                     <button class="nav-btn" data-tab="typography"><i class="fas fa-font"></i> Typography</button>
@@ -608,20 +415,13 @@
                     <button class="nav-btn" data-tab="editor"><i class="fas fa-link"></i> Folders & Apps</button>
                     <button class="nav-btn" data-tab="account"><i class="fas fa-cloud"></i> Cloud Sync</button>
                 </div>
-
-                <!-- Panels -->
                 <div class="settings-panels">
-                    
                     <!-- Tab: Background -->
                     <div id="tab-general" class="tab-panel active">
                         <div class="setting-section">
                             <h3>Greeting</h3>
-                            <div class="form-group">
-                                <label>Your Name</label>
-                                <input type="text" id="input-name" placeholder="e.g., Jo">
-                            </div>
+                            <div class="form-group"><label>Your Name</label><input type="text" id="input-name" placeholder="e.g., Jo"></div>
                         </div>
-                        
                         <div class="setting-section">
                             <h3>Background Source</h3>
                             <div class="form-group">
@@ -632,7 +432,6 @@
                                     <option value="local">Local Image Upload</option>
                                 </select>
                             </div>
-
                             <div class="form-group" id="bg-timer-section">
                                 <label>Change Background</label>
                                 <select id="select-bg-timer">
@@ -643,8 +442,6 @@
                                     <option value="3600000">Every 1 Hour</option>
                                 </select>
                             </div>
-                            
-                            <!-- Unsplash Collections -->
                             <div id="bg-unsplash-section" class="form-group">
                                 <label>Choose Collection Theme</label>
                                 <select id="select-unsplash-collection">
@@ -654,245 +451,98 @@
                                     <option value="space">Space & Sci-Fi</option>
                                 </select>
                             </div>
-
-                            <!-- Single URL -->
                             <div id="bg-url-section" class="form-group" style="display: none;">
-                                <label>Image URL</label>
-                                <input type="text" id="input-bg" placeholder="https://...">
+                                <label>Image URL</label><input type="text" id="input-bg" placeholder="https://...">
                                 <small style="color:#888; display:block; margin-top:5px;">If using Google Drive, the file MUST be set to "Anyone with the link can view".</small>
                             </div>
-
-                            <!-- Custom URL List -->
                             <div id="bg-custom-list-section" class="form-group" style="display: none;">
                                 <label>Custom Image URLs (One per line)</label>
                                 <textarea id="input-bg-list" style="width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 6px; font-family: monospace; font-size: 12px; resize: vertical;" rows="5" placeholder="https://imgbb.com/...&#10;https://drive.google.com/..."></textarea>
                                 <small style="color:#eab308; display:block; margin-top:5px; font-weight:bold;">Note on Drive Folders: Browser security prevents auto-loading images directly from a Drive folder link. Please paste links to the individual files here.</small>
                             </div>
-                            
-                            <!-- Local Upload Area -->
                             <div id="bg-local-section" class="form-group" style="display: none;">
-                                <div class="upload-area" id="upload-dropzone">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                    <p>Click to upload a local image</p>
-                                    <input type="file" id="file-input" accept="image/jpeg, image/png, image/webp">
-                                </div>
+                                <div class="upload-area" id="upload-dropzone"><i class="fas fa-cloud-upload-alt"></i><p>Click to upload a local image</p><input type="file" id="file-input" accept="image/jpeg, image/png, image/webp"></div>
                                 <div id="upload-status" style="font-size: 12px; color: #4caf50; margin-top: 10px; text-align: center; display: none;">Image uploaded and saved!</div>
                             </div>
                         </div>
-                        
                         <div class="setting-section">
                             <h3>Overlay Filter</h3>
                             <div class="form-group">
                                 <label>Darken Background <span class="range-value" id="val-overlay">30%</span></label>
-                                <div class="range-wrapper">
-                                    <input type="range" id="slider-overlay" min="0" max="90" value="30">
-                                </div>
+                                <div class="range-wrapper"><input type="range" id="slider-overlay" min="0" max="90" value="30"></div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Tab: Typography & Style -->
+                    <!-- Tab: Typography -->
                     <div id="tab-typography" class="tab-panel">
                         <div class="setting-section">
                             <h3>Global Settings</h3>
                             <div class="form-group">
                                 <label>Upload Custom Font (.ttf, .woff)</label>
-                                <div class="upload-area" id="font-upload-dropzone">
-                                    <i class="fas fa-font"></i>
-                                    <p>Click to upload a custom font</p>
-                                    <input type="file" id="font-file-input" accept=".ttf,.woff,.woff2,.otf">
-                                </div>
+                                <div class="upload-area" id="font-upload-dropzone"><i class="fas fa-font"></i><p>Click to upload a custom font</p><input type="file" id="font-file-input" accept=".ttf,.woff,.woff2,.otf"></div>
                                 <div id="font-upload-status" style="font-size: 12px; color: #4caf50; margin-top: 5px; text-align: center; display: none;">Font uploaded successfully!</div>
                             </div>
                             <div class="form-group">
                                 <label>Global Sizing Scale <span class="range-value" id="val-scale">0.7x</span></label>
-                                <div class="range-wrapper">
-                                    <input type="range" id="slider-scale" min="0.5" max="1.5" step="0.1" value="0.7">
-                                </div>
+                                <div class="range-wrapper"><input type="range" id="slider-scale" min="0.5" max="1.5" step="0.1" value="0.7"></div>
                             </div>
-                            <div class="toggle-row">
-                                <span style="font-size: 13px; color: #bbb;">Enable Text Shadow (Crucial for light backgrounds)</span>
-                                <label class="switch">
-                                    <input type="checkbox" id="toggle-shadow" checked>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
+                            <div class="toggle-row"><span style="font-size: 13px; color: #bbb;">Enable Text Shadow (Crucial for light backgrounds)</span><label class="switch"><input type="checkbox" id="toggle-shadow" checked><span class="slider"></span></label></div>
                         </div>
-
                         <div class="setting-section">
                             <h3>Clock</h3>
                             <div class="form-group">
                                 <select id="select-clock-font">
-                                    <optgroup label="Custom">
-                                        <option value="'MyCustomFont', sans-serif" style="font-family: 'MyCustomFont', sans-serif;">Uploaded Custom Font</option>
-                                    </optgroup>
-                                    <optgroup label="Sans-Serif">
-                                        <option value="'Inter', system-ui, sans-serif" style="font-family: 'Inter', sans-serif;">Inter</option>
-                                        <option value="'Roboto', sans-serif" style="font-family: 'Roboto', sans-serif;">Roboto</option>
-                                        <option value="'Poppins', sans-serif" style="font-family: 'Poppins', sans-serif;">Poppins</option>
-                                        <option value="'Montserrat', sans-serif" style="font-family: 'Montserrat', sans-serif;">Montserrat</option>
-                                        <option value="'Lato', sans-serif" style="font-family: 'Lato', sans-serif;">Lato</option>
-                                        <option value="'Segoe UI', system-ui, sans-serif" style="font-family: 'Segoe UI', sans-serif;">Segoe UI (System Default)</option>
-                                    </optgroup>
-                                    <optgroup label="Serif">
-                                        <option value="'Playfair Display', serif" style="font-family: 'Playfair Display', serif;">Playfair Display</option>
-                                        <option value="'Merriweather', serif" style="font-family: 'Merriweather', serif;">Merriweather</option>
-                                        <option value="'Lora', serif" style="font-family: 'Lora', serif;">Lora</option>
-                                    </optgroup>
-                                    <optgroup label="Display & Script">
-                                        <option value="'Bebas Neue', display" style="font-family: 'Bebas Neue', display;">Bebas Neue</option>
-                                        <option value="'Oswald', sans-serif" style="font-family: 'Oswald', sans-serif;">Oswald</option>
-                                        <option value="'Pacifico', cursive" style="font-family: 'Pacifico', cursive;">Pacifico</option>
-                                        <option value="'Dancing Script', cursive" style="font-family: 'Dancing Script', cursive;">Dancing Script</option>
-                                    </optgroup>
-                                    <optgroup label="Monospace">
-                                        <option value="'Roboto Mono', monospace" style="font-family: 'Roboto Mono', monospace;">Roboto Mono</option>
-                                        <option value="'Space Mono', monospace" style="font-family: 'Space Mono', monospace;">Space Mono</option>
-                                    </optgroup>
+                                    <optgroup label="Custom"><option value="'MyCustomFont', sans-serif">Uploaded Custom Font</option></optgroup>
+                                    <optgroup label="Sans-Serif"><option value="'Inter', system-ui, sans-serif">Inter</option><option value="'Roboto', sans-serif">Roboto</option><option value="'Poppins', sans-serif">Poppins</option><option value="'Montserrat', sans-serif">Montserrat</option><option value="'Lato', sans-serif">Lato</option><option value="'Segoe UI', system-ui, sans-serif">Segoe UI</option></optgroup>
+                                    <optgroup label="Serif"><option value="'Playfair Display', serif">Playfair Display</option><option value="'Merriweather', serif">Merriweather</option><option value="'Lora', serif">Lora</option></optgroup>
+                                    <optgroup label="Display & Script"><option value="'Bebas Neue', display">Bebas Neue</option><option value="'Oswald', sans-serif">Oswald</option><option value="'Pacifico', cursive">Pacifico</option><option value="'Dancing Script', cursive">Dancing Script</option></optgroup>
+                                    <optgroup label="Monospace"><option value="'Roboto Mono', monospace">Roboto Mono</option><option value="'Space Mono', monospace">Space Mono</option></optgroup>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label>Size <span class="range-value" id="val-clock-size">100px</span></label>
-                                <div class="range-wrapper">
-                                    <input type="range" id="slider-clock-size" min="40" max="200" step="1" value="100">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Weight / Boldness <span class="range-value" id="val-clock-weight">700</span></label>
-                                <div class="range-wrapper">
-                                    <input type="range" id="slider-clock-weight" min="100" max="900" step="100" value="700">
-                                </div>
-                            </div>
+                            <div class="form-group"><label>Size <span class="range-value" id="val-clock-size">100px</span></label><div class="range-wrapper"><input type="range" id="slider-clock-size" min="40" max="200" step="1" value="100"></div></div>
+                            <div class="form-group"><label>Weight <span class="range-value" id="val-clock-weight">700</span></label><div class="range-wrapper"><input type="range" id="slider-clock-weight" min="100" max="900" step="100" value="700"></div></div>
                             <div class="font-preview-box" id="preview-box-clock">12:34 PM</div>
                         </div>
-
                         <div class="setting-section">
                             <h3>Greeting</h3>
                             <div class="form-group">
                                 <select id="select-greeting-font">
-                                    <optgroup label="Custom">
-                                        <option value="'MyCustomFont', sans-serif" style="font-family: 'MyCustomFont', sans-serif;">Uploaded Custom Font</option>
-                                    </optgroup>
-                                    <optgroup label="Sans-Serif">
-                                        <option value="'Inter', system-ui, sans-serif" style="font-family: 'Inter', sans-serif;">Inter</option>
-                                        <option value="'Roboto', sans-serif" style="font-family: 'Roboto', sans-serif;">Roboto</option>
-                                        <option value="'Poppins', sans-serif" style="font-family: 'Poppins', sans-serif;">Poppins</option>
-                                        <option value="'Montserrat', sans-serif" style="font-family: 'Montserrat', sans-serif;">Montserrat</option>
-                                        <option value="'Lato', sans-serif" style="font-family: 'Lato', sans-serif;">Lato</option>
-                                        <option value="'Segoe UI', system-ui, sans-serif" style="font-family: 'Segoe UI', sans-serif;">Segoe UI (System Default)</option>
-                                    </optgroup>
-                                    <optgroup label="Serif">
-                                        <option value="'Playfair Display', serif" style="font-family: 'Playfair Display', serif;">Playfair Display</option>
-                                        <option value="'Merriweather', serif" style="font-family: 'Merriweather', serif;">Merriweather</option>
-                                        <option value="'Lora', serif" style="font-family: 'Lora', serif;">Lora</option>
-                                    </optgroup>
-                                    <optgroup label="Display & Script">
-                                        <option value="'Bebas Neue', display" style="font-family: 'Bebas Neue', display;">Bebas Neue</option>
-                                        <option value="'Oswald', sans-serif" style="font-family: 'Oswald', sans-serif;">Oswald</option>
-                                        <option value="'Pacifico', cursive" style="font-family: 'Pacifico', cursive;">Pacifico</option>
-                                        <option value="'Dancing Script', cursive" style="font-family: 'Dancing Script', cursive;">Dancing Script</option>
-                                    </optgroup>
-                                    <optgroup label="Monospace">
-                                        <option value="'Roboto Mono', monospace" style="font-family: 'Roboto Mono', monospace;">Roboto Mono</option>
-                                        <option value="'Space Mono', monospace" style="font-family: 'Space Mono', monospace;">Space Mono</option>
-                                    </optgroup>
+                                    <optgroup label="Custom"><option value="'MyCustomFont', sans-serif">Uploaded Custom Font</option></optgroup>
+                                    <optgroup label="Sans-Serif"><option value="'Inter', system-ui, sans-serif">Inter</option><option value="'Roboto', sans-serif">Roboto</option><option value="'Poppins', sans-serif">Poppins</option><option value="'Montserrat', sans-serif">Montserrat</option><option value="'Lato', sans-serif">Lato</option><option value="'Segoe UI', system-ui, sans-serif">Segoe UI</option></optgroup>
+                                    <optgroup label="Serif"><option value="'Playfair Display', serif">Playfair Display</option><option value="'Merriweather', serif">Merriweather</option><option value="'Lora', serif">Lora</option></optgroup>
+                                    <optgroup label="Display & Script"><option value="'Bebas Neue', display">Bebas Neue</option><option value="'Oswald', sans-serif">Oswald</option><option value="'Pacifico', cursive">Pacifico</option><option value="'Dancing Script', cursive">Dancing Script</option></optgroup>
+                                    <optgroup label="Monospace"><option value="'Roboto Mono', monospace">Roboto Mono</option><option value="'Space Mono', monospace">Space Mono</option></optgroup>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label>Size <span class="range-value" id="val-greeting-size">28px</span></label>
-                                <div class="range-wrapper">
-                                    <input type="range" id="slider-greeting-size" min="16" max="80" step="1" value="28">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Weight / Boldness <span class="range-value" id="val-greeting-weight">300</span></label>
-                                <div class="range-wrapper">
-                                    <input type="range" id="slider-greeting-weight" min="100" max="900" step="100" value="300">
-                                </div>
-                            </div>
+                            <div class="form-group"><label>Size <span class="range-value" id="val-greeting-size">28px</span></label><div class="range-wrapper"><input type="range" id="slider-greeting-size" min="16" max="80" step="1" value="28"></div></div>
+                            <div class="form-group"><label>Weight <span class="range-value" id="val-greeting-weight">300</span></label><div class="range-wrapper"><input type="range" id="slider-greeting-weight" min="100" max="900" step="100" value="300"></div></div>
                             <div class="font-preview-box" id="preview-box-greeting">Good morning, Jo!</div>
                         </div>
-
                         <div class="setting-section">
                             <h3>Quotes</h3>
                             <div class="form-group">
                                 <select id="select-quote-font">
-                                    <optgroup label="Custom">
-                                        <option value="'MyCustomFont', sans-serif" style="font-family: 'MyCustomFont', sans-serif;">Uploaded Custom Font</option>
-                                    </optgroup>
-                                    <optgroup label="Sans-Serif">
-                                        <option value="'Inter', system-ui, sans-serif" style="font-family: 'Inter', sans-serif;">Inter</option>
-                                        <option value="'Roboto', sans-serif" style="font-family: 'Roboto', sans-serif;">Roboto</option>
-                                        <option value="'Poppins', sans-serif" style="font-family: 'Poppins', sans-serif;">Poppins</option>
-                                        <option value="'Montserrat', sans-serif" style="font-family: 'Montserrat', sans-serif;">Montserrat</option>
-                                        <option value="'Lato', sans-serif" style="font-family: 'Lato', sans-serif;">Lato</option>
-                                        <option value="'Segoe UI', system-ui, sans-serif" style="font-family: 'Segoe UI', sans-serif;">Segoe UI (System Default)</option>
-                                    </optgroup>
-                                    <optgroup label="Serif">
-                                        <option value="'Playfair Display', serif" style="font-family: 'Playfair Display', serif;">Playfair Display</option>
-                                        <option value="'Merriweather', serif" style="font-family: 'Merriweather', serif;">Merriweather</option>
-                                        <option value="'Lora', serif" style="font-family: 'Lora', serif;">Lora</option>
-                                    </optgroup>
-                                    <optgroup label="Display & Script">
-                                        <option value="'Bebas Neue', display" style="font-family: 'Bebas Neue', display;">Bebas Neue</option>
-                                        <option value="'Oswald', sans-serif" style="font-family: 'Oswald', sans-serif;">Oswald</option>
-                                        <option value="'Pacifico', cursive" style="font-family: 'Pacifico', cursive;">Pacifico</option>
-                                        <option value="'Dancing Script', cursive" style="font-family: 'Dancing Script', cursive;">Dancing Script</option>
-                                    </optgroup>
-                                    <optgroup label="Monospace">
-                                        <option value="'Roboto Mono', monospace" style="font-family: 'Roboto Mono', monospace;">Roboto Mono</option>
-                                        <option value="'Space Mono', monospace" style="font-family: 'Space Mono', monospace;">Space Mono</option>
-                                    </optgroup>
+                                    <optgroup label="Custom"><option value="'MyCustomFont', sans-serif">Uploaded Custom Font</option></optgroup>
+                                    <optgroup label="Sans-Serif"><option value="'Inter', system-ui, sans-serif">Inter</option><option value="'Roboto', sans-serif">Roboto</option><option value="'Poppins', sans-serif">Poppins</option><option value="'Montserrat', sans-serif">Montserrat</option><option value="'Lato', sans-serif">Lato</option><option value="'Segoe UI', system-ui, sans-serif">Segoe UI</option></optgroup>
+                                    <optgroup label="Serif"><option value="'Playfair Display', serif">Playfair Display</option><option value="'Merriweather', serif">Merriweather</option><option value="'Lora', serif">Lora</option></optgroup>
+                                    <optgroup label="Display & Script"><option value="'Bebas Neue', display">Bebas Neue</option><option value="'Oswald', sans-serif">Oswald</option><option value="'Pacifico', cursive">Pacifico</option><option value="'Dancing Script', cursive">Dancing Script</option></optgroup>
+                                    <optgroup label="Monospace"><option value="'Roboto Mono', monospace">Roboto Mono</option><option value="'Space Mono', monospace">Space Mono</option></optgroup>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label>Size <span class="range-value" id="val-quote-size">16px</span></label>
-                                <div class="range-wrapper">
-                                    <input type="range" id="slider-quote-size" min="10" max="40" step="1" value="16">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Weight / Boldness <span class="range-value" id="val-quote-weight">400</span></label>
-                                <div class="range-wrapper">
-                                    <input type="range" id="slider-quote-weight" min="100" max="900" step="100" value="400">
-                                </div>
-                            </div>
+                            <div class="form-group"><label>Size <span class="range-value" id="val-quote-size">16px</span></label><div class="range-wrapper"><input type="range" id="slider-quote-size" min="10" max="40" step="1" value="16"></div></div>
+                            <div class="form-group"><label>Weight <span class="range-value" id="val-quote-weight">400</span></label><div class="range-wrapper"><input type="range" id="slider-quote-weight" min="100" max="900" step="100" value="400"></div></div>
                             <div class="font-preview-box" id="preview-box-quote" style="font-size: 16px;">"The only way to do great work is to love what you do."</div>
                         </div>
                     </div>
-                    
-                    <!-- Tab: Layout & Widgets -->
+                    <!-- Tab: Layout -->
                     <div id="tab-layout" class="tab-panel">
                         <div class="setting-section">
                             <h3>Glassmorphism UI</h3>
-                            <div class="form-group">
-                                <label>Glass Blur <span class="range-value" id="val-glass-blur">7px</span></label>
-                                <div class="range-wrapper">
-                                    <input type="range" id="slider-glass-blur" min="0" max="100" step="1" value="7">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Glass Opacity <span class="range-value" id="val-glass-opacity">2%</span></label>
-                                <div class="range-wrapper">
-                                    <input type="range" id="slider-glass-opacity" min="0" max="100" step="1" value="2">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Corner Radius <span class="range-value" id="val-glass-radius">32px</span></label>
-                                <div class="range-wrapper">
-                                    <input type="range" id="slider-glass-radius" min="0" max="100" step="1" value="32">
-                                </div>
-                            </div>
-                            <div class="form-group" style="margin-top: 20px;">
-                                <label>Vertical Alignment</label>
-                                <select id="select-alignment">
-                                    <option value="top">Top</option>
-                                    <option value="center">Center</option>
-                                    <option value="bottom">Bottom</option>
-                                </select>
-                            </div>
+                            <div class="form-group"><label>Glass Blur <span class="range-value" id="val-glass-blur">7px</span></label><div class="range-wrapper"><input type="range" id="slider-glass-blur" min="0" max="100" step="1" value="7"></div></div>
+                            <div class="form-group"><label>Glass Opacity <span class="range-value" id="val-glass-opacity">2%</span></label><div class="range-wrapper"><input type="range" id="slider-glass-opacity" min="0" max="100" step="1" value="2"></div></div>
+                            <div class="form-group"><label>Corner Radius <span class="range-value" id="val-glass-radius">32px</span></label><div class="range-wrapper"><input type="range" id="slider-glass-radius" min="0" max="100" step="1" value="32"></div></div>
+                            <div class="form-group" style="margin-top: 20px;"><label>Vertical Alignment</label><select id="select-alignment"><option value="top">Top</option><option value="center">Center</option><option value="bottom">Bottom</option></select></div>
                         </div>
-
                         <div class="setting-section">
                             <h3>Widgets Visibility</h3>
                             <div class="toggle-row"><span style="font-size: 13px; color: #bbb;">Show Clock</span><label class="switch"><input type="checkbox" id="toggle-clock" checked><span class="slider"></span></label></div>
@@ -901,165 +551,104 @@
                             <div class="toggle-row"><span style="font-size: 13px; color: #bbb;">Show Folders & Apps</span><label class="switch"><input type="checkbox" id="toggle-links" checked><span class="slider"></span></label></div>
                             <div class="toggle-row"><span style="font-size: 13px; color: #bbb;">Show Daily Quote</span><label class="switch"><input type="checkbox" id="toggle-quotes" checked><span class="slider"></span></label></div>
                         </div>
-
                         <div class="setting-section">
                             <h3>Widget Preferences</h3>
-                            <div class="form-group">
-                                <label>Search Provider</label>
-                                <select id="select-search-provider">
-                                    <option value="google">Google</option>
-                                    <option value="duckduckgo">DuckDuckGo</option>
-                                    <option value="bing">Bing</option>
-                                </select>
-                            </div>
-                            <div class="toggle-row"><span style="font-size: 13px; color: #bbb;">Dynamic Greeting (Time-based)</span><label class="switch"><input type="checkbox" id="toggle-dynamic-greeting" checked><span class="slider"></span></label></div>
+                            <div class="form-group"><label>Search Provider</label><select id="select-search-provider"><option value="google">Google</option><option value="duckduckgo">DuckDuckGo</option><option value="bing">Bing</option></select></div>
+                            <div class="toggle-row"><span style="font-size: 13px; color: #bbb;">Dynamic Greeting</span><label class="switch"><input type="checkbox" id="toggle-dynamic-greeting" checked><span class="slider"></span></label></div>
                             <div class="toggle-row"><span style="font-size: 13px; color: #bbb;">24-Hour Clock Format</span><label class="switch"><input type="checkbox" id="toggle-24h"><span class="slider"></span></label></div>
                             <div class="toggle-row"><span style="font-size: 13px; color: #bbb;">Show Seconds on Clock</span><label class="switch"><input type="checkbox" id="toggle-seconds"><span class="slider"></span></label></div>
                         </div>
                     </div>
-
-                    <!-- Tab: Links Editor -->
+                    <!-- Tab: Editor -->
                     <div id="tab-editor" class="tab-panel">
                         <div class="editor-container">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div class="pages-list" id="editor-page-list">
-                                    <!-- Pills injected via JS -->
-                                </div>
+                                <div class="pages-list" id="editor-page-list"></div>
                                 <button class="btn btn-secondary btn-sm" onclick="addPage()" style="flex-shrink: 0; margin-left: 10px;"><i class="fas fa-plus"></i></button>
                             </div>
-
-                            <div class="page-details" id="editor-page-details">
-                                <!-- Editor injected via JS -->
-                            </div>
+                            <div class="page-details" id="editor-page-details"></div>
                         </div>
                     </div>
-
-                    <!-- Tab: Account / Cloud Sync -->
+                    <!-- Tab: Account -->
                     <div id="tab-account" class="tab-panel">
                         <div class="setting-section">
                             <h3>Supabase Cloud Sync</h3>
                             <p style="font-size: 13px; color: #aaa; margin-bottom: 20px;">Log in to sync your layout, links, and preferences across devices.</p>
-                            
                             <div id="auth-unauthenticated">
-                                <div class="form-group">
-                                    <label>Email</label>
-                                    <input type="text" id="auth-email" placeholder="your@email.com">
-                                </div>
-                                <div class="form-group">
-                                    <label>Password</label>
-                                    <input type="password" id="auth-password" placeholder="••••••••" style="width: 100%; padding: 10px 12px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 6px;">
-                                </div>
-                                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                                    <button class="btn" id="btn-login" style="flex-grow: 1;">Login</button>
-                                    <button class="btn btn-secondary" id="btn-register" style="flex-grow: 1;">Register</button>
-                                </div>
+                                <div class="form-group"><label>Email</label><input type="text" id="auth-email" placeholder="your@email.com"></div>
+                                <div class="form-group"><label>Password</label><input type="password" id="auth-password" placeholder="••••••••" style="width: 100%; padding: 10px 12px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 6px;"></div>
+                                <div style="display: flex; gap: 10px; margin-top: 15px;"><button class="btn" id="btn-login" style="flex-grow: 1;">Login</button><button class="btn btn-secondary" id="btn-register" style="flex-grow: 1;">Register</button></div>
                                 <div id="auth-error" style="color: #ff4d4d; font-size: 13px; margin-top: 15px; display: none;"></div>
                             </div>
-
                             <div id="auth-authenticated" style="display: none; text-align: center; padding: 20px 0;">
-                                <div style="width: 60px; height: 60px; background: rgba(0, 120, 215, 0.2); color: #0078d7; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 15px;">
-                                    <i class="fas fa-user-check"></i>
-                                </div>
+                                <div style="width: 60px; height: 60px; background: rgba(0, 120, 215, 0.2); color: #0078d7; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 15px;"><i class="fas fa-user-check"></i></div>
                                 <h4 style="margin: 0 0 5px 0; font-size: 18px;">Signed In</h4>
                                 <p id="auth-user-email" style="color: #aaa; font-size: 14px; margin: 0 0 20px 0;"></p>
                                 <button class="btn btn-secondary" id="btn-logout">Sign Out</button>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
-
-            <div class="modal-actions">
-                <button class="btn btn-secondary" id="close-settings">Close</button>
-                <button class="btn" id="save-settings">Save & Apply</button>
-            </div>
+            <div class="modal-actions"><button class="btn btn-secondary" id="close-settings">Close</button><button class="btn" id="save-settings">Save & Apply</button></div>
         </div>
     </div>
 
     <script>
-        // --- 0. SUPABASE CONFIGURATION ---
-        // REPLACE THESE WITH YOUR OWN SUPABASE CREDENTIALS
         const SUPABASE_URL = 'https://hpsmfgcubsmzddhwxxbf.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_JygabwcD7rk-Ll4MN93_KA_1Y6_7Kfh';
         
-        // Initialize Supabase Client
         let supabaseClient;
-        if (SUPABASE_URL !== 'YOUR_SUPABASE_PROJECT_URL') {
-            try {
+        try {
+            if (window.supabase) {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            } catch (e) {
-                console.warn("Supabase initialization failed. Check credentials or key format.", e);
             }
-        } else {
-            console.warn("Supabase credentials missing. Running in local-only mode.");
-        }
+        } catch (e) { console.warn("Supabase init failed:", e); }
         
         let currentUser = null;
 
-        // --- 1. DEFAULT DATA & STATE ---
         const defaultStyle = {
             overlayOpacity: 0.3, textShadow: true, globalScale: 0.7,
             clockFont: "'Oswald', sans-serif", clockSize: 100, clockWeight: 700,
             greetingFont: "'Playfair Display', serif", greetingSize: 28, greetingWeight: 300,
             quoteFont: "'Inter', system-ui, sans-serif", quoteSize: 16, quoteWeight: 400,
             glassBlur: 7, glassOpacity: 2, glassRadius: 32, alignment: 'center',
-            bgRefreshInterval: 'refresh',
-            slideshowSpeed: 3000 // Default 3s
+            bgRefreshInterval: 'refresh', slideshowSpeed: 3000, cardGap: '25px'
         };
 
         const defaultWidgets = {
             showClock: true, showGreeting: true, showSearch: true, showLinks: true, showQuotes: true,
-            clockFormat: '12h', showSeconds: false, dynamicGreeting: true, searchProvider: 'google',
-            uiHidden: false
+            clockFormat: '12h', showSeconds: false, dynamicGreeting: true, searchProvider: 'google', uiHidden: false
         };
 
-        // Curated Unsplash photo IDs (High Quality)
         const unsplashCollections = {
-            nature: ["1448375240586-dfd8d3793306", "1472214103451-9374bd1c798e", "1469474968028-56623f02e42e", "1426604966848-d7adac402bff", "1470071131384-001b85755b36", "1447752809965-9268225d2ea6", "1501854140801-50d01698950b"],
-            architecture: ["1486406146926-c627a92ad1ab", "1449844908441-8829872d2607", "1479839672679-a46483c0e7c8", "1511818966892-d7d671fc2752", "1486304873000-235643847519"],
-            minimal: ["1494438639946-1ebd1d20bf85", "1507608616785-3e2e5b080b59", "1490818387583-1b0ba68bbd34", "1513542789411-b6a5d4f31634", "1493612216891-65cbf18dcece"],
-            space: ["1462331940025-496dfbfc7564", "1451187580459-43490279c0fa", "1464802686167-b939a6910659", "1444703686981-a3abbc4d4fe3", "1450806115866-26796c096410"]
+            nature: ["1448375240586-dfd8d3793306", "1472214103451-9374bd1c798e", "1469474968028-56623f02e42e", "1426604966848-d7adac402bff"],
+            architecture: ["1486406146926-c627a92ad1ab", "1449844908441-8829872d2607", "1479839672679-a46483c0e7c8"],
+            minimal: ["1494438639946-1ebd1d20bf85", "1507608616785-3e2e5b080b59", "1490818387583-1b0ba68bbd34"],
+            space: ["1462331940025-496dfbfc7564", "1451187580459-43490279c0fa", "1464802686167-b939a6910659"]
         };
 
         const defaultData = {
-            name: "Jo", 
-            backgroundType: "unsplash", 
-            unsplashCollection: "nature",
+            name: "Jo", backgroundType: "unsplash", unsplashCollection: "nature",
             backgroundUrl: "https://images.unsplash.com/photo-1448375240586-dfd8d3793306?q=80&w=1920&auto=format&fit=crop",
-            customBgUrls: [
-                "https://images.unsplash.com/photo-1448375240586-dfd8d3793306?q=80&w=1920&auto=format&fit=crop",
-                "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1920&auto=format&fit=crop"
-            ],
+            customBgUrls: ["https://images.unsplash.com/photo-1448375240586-dfd8d3793306?q=80&w=1920&auto=format&fit=crop"],
             style: { ...defaultStyle }, widgets: { ...defaultWidgets },
             pages: [
-                {
-                    icon: "fas fa-home", name: "Personal",
-                    links: [
-                        { name: "YouTube", url: "https://youtube.com", icon: "", color: "#ff0000" },
-                        { name: "Reddit", url: "https://reddit.com", icon: "", color: "#ff4500" },
-                        { name: "Instagram", url: "https://instagram.com", icon: "", color: "#e1306c" },
-                        { name: "Telegram", url: "https://web.telegram.org", icon: "", color: "#0088cc" }
-                    ]
-                },
-                {
-                    icon: "fas fa-briefcase", name: "Work",
-                    links: [
-                        { name: "Gmail", url: "https://mail.google.com", icon: "", color: "#ea4335" },
-                        { name: "GitHub", url: "https://github.com", icon: "", color: "#ffffff" }
-                    ]
-                }
+                { icon: "fas fa-home", name: "Personal", links: [
+                    { name: "YouTube", url: "https://youtube.com", icon: "", color: "#ff0000" },
+                    { name: "Reddit", url: "https://reddit.com", icon: "", color: "#ff4500" }
+                ]},
+                { icon: "fas fa-briefcase", name: "Work", links: [
+                    { name: "Gmail", url: "https://mail.google.com", icon: "", color: "#ea4335" },
+                    { name: "GitHub", url: "https://github.com", icon: "", color: "#ffffff" }
+                ]}
             ]
         };
 
         const quotes = [
             { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
             { text: "Life is what happens when you're busy making other plans.", author: "John Lennon" },
-            { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
-            { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
-            { text: "In the end, it's not the years in your life that count. It's the life in your years.", author: "Abraham Lincoln" },
-            { text: "Get busy living or get busy dying.", author: "Stephen King" },
-            { text: "You only live once, but if you do it right, once is enough.", author: "Mae West" }
+            { text: "Get busy living or get busy dying.", author: "Stephen King" }
         ];
 
         let appData = defaultData;
@@ -1075,19 +664,13 @@
         let activeBgLayer = 1;
         let localFontDataUrl = null;
 
-        const availableIcons = [
-            "fas fa-home", "fas fa-briefcase", "fas fa-paint-brush", "fas fa-folder", 
-            "fas fa-gamepad", "fas fa-music", "fas fa-code", "fas fa-book", 
-            "fas fa-globe", "fas fa-heart", "fas fa-star", "fas fa-compass", 
-            "fas fa-camera", "fas fa-film", "fas fa-utensils", "fas fa-shopping-cart"
-        ];
+        const availableIcons = ["fas fa-home", "fas fa-briefcase", "fas fa-paint-brush", "fas fa-folder", "fas fa-gamepad", "fas fa-music", "fas fa-code", "fas fa-book", "fas fa-globe", "fas fa-heart", "fas fa-star", "fas fa-compass", "fas fa-camera", "fas fa-film", "fas fa-utensils", "fas fa-shopping-cart"];
 
-        // --- 2. INDEXEDDB SETUP (For Local Images & Fonts) ---
         const dbName = "NewTabDB";
         let localDb;
 
         function initDB(callback) {
-            const request = indexedDB.open(dbName, 2); // Upgraded to v2 for fonts
+            const request = indexedDB.open(dbName, 2);
             request.onupgradeneeded = (event) => {
                 localDb = event.target.result;
                 if (!localDb.objectStoreNames.contains('images')) localDb.createObjectStore('images', { keyPath: 'id' });
@@ -1097,7 +680,7 @@
                 localDb = event.target.result;
                 loadLocalData(callback);
             };
-            request.onerror = (e) => console.error("IndexedDB error:", e);
+            request.onerror = (e) => { console.error("IndexedDB error:", e); if(callback) callback(); };
         }
 
         function saveToLocalDB(storeName, id, dataUrl) {
@@ -1115,30 +698,17 @@
             imgReq.onsuccess = () => { if (imgReq.result) localImageDataUrl = imgReq.result.data; checkDone(); };
             imgReq.onerror = checkDone;
 
-            // Handle case where font store might be missing or empty gracefully
             try {
                 const fontReq = localDb.transaction(['fonts'], 'readonly').objectStore('fonts').get('customFont');
-                fontReq.onsuccess = () => { 
-                    if (fontReq.result) {
-                        localFontDataUrl = fontReq.result.data;
-                        applyCustomFontToDOM(localFontDataUrl);
-                    }
-                    checkDone(); 
-                };
+                fontReq.onsuccess = () => { if (fontReq.result) { localFontDataUrl = fontReq.result.data; applyCustomFontToDOM(localFontDataUrl); } checkDone(); };
                 fontReq.onerror = checkDone;
-            } catch (e) {
-                checkDone();
-            }
+            } catch(e) { checkDone(); }
         }
 
         function applyCustomFontToDOM(dataUrl) {
             if (!dataUrl) return;
             let styleEl = document.getElementById('injected-custom-font');
-            if (!styleEl) {
-                styleEl = document.createElement('style');
-                styleEl.id = 'injected-custom-font';
-                document.head.appendChild(styleEl);
-            }
+            if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = 'injected-custom-font'; document.head.appendChild(styleEl); }
             styleEl.innerHTML = `@font-face { font-family: 'MyCustomFont'; src: url('${dataUrl}'); }`;
         }
 
@@ -1149,14 +719,9 @@
             setTimeout(() => toast.classList.remove('show'), 2500);
         }
 
-        // --- 3. DATA LOADING & INITIALIZATION (SUPABASE) ---
         async function saveToCloud(data) {
             if (!supabaseClient || !currentUser) return;
-            try {
-                await supabaseClient.from('user_settings').upsert({ id: currentUser.id, config: data });
-            } catch (e) {
-                console.error("Error saving config to cloud", e);
-            }
+            try { await supabaseClient.from('user_settings').upsert({ id: currentUser.id, config: data }); } catch (e) { console.error("Error saving config", e); }
         }
 
         async function loadFromCloud() {
@@ -1164,10 +729,10 @@
             try {
                 const { data, error } = await supabaseClient.from('user_settings').select('config').eq('id', currentUser.id).single();
                 if (data && data.config) {
-                    appData = data.config;
+                    appData = { ...defaultData, ...data.config };
+                    // Deep merge style/widgets to prevent missing keys on upgrades
                     appData.style = { ...defaultStyle, ...appData.style };
                     appData.widgets = { ...defaultWidgets, ...appData.widgets };
-                    
                     applyCSSVariables(appData, true);
                     applyWidgetsVisibility(appData);
                     applyUIHidden(appData.widgets.uiHidden);
@@ -1179,13 +744,11 @@
 
         function initAuth() {
             if(!supabaseClient) return;
-            
             supabaseClient.auth.getSession().then(({ data: { session } }) => {
                 currentUser = session?.user || null;
                 updateAuthUI();
                 if(currentUser) loadFromCloud();
             });
-
             supabaseClient.auth.onAuthStateChange((_event, session) => {
                 currentUser = session?.user || null;
                 updateAuthUI();
@@ -1206,7 +769,7 @@
 
         function init() {
             try {
-                const saved = localStorage.getItem("myNewTab_Data_v9");
+                const saved = localStorage.getItem("myNewTab_Data_v10"); // Version bump to clear corrupted state
                 if (saved) {
                     appData = JSON.parse(saved);
                     appData.style = { ...defaultStyle, ...appData.style };
@@ -1217,6 +780,7 @@
             setRandomQuote();
             
             initDB(() => {
+                // Ensure bg loads immediately
                 applyCSSVariables(appData, true); 
                 applyWidgetsVisibility(appData);
                 applyUIHidden(appData.widgets?.uiHidden);
@@ -1241,25 +805,9 @@
             return `https://images.unsplash.com/photo-${randomId}?q=80&w=1920&auto=format&fit=crop`;
         }
 
-        function getResolvedBgUrl(data) {
-            if (data.backgroundType === 'local' && localImageDataUrl) {
-                return localImageDataUrl;
-            } else if (data.backgroundType === 'unsplash') {
-                return getRandomUnsplashUrl(data.unsplashCollection);
-            } else if (data.backgroundType === 'custom_list' && data.customBgUrls && data.customBgUrls.length > 0) {
-                customBgIndex = customBgIndex % data.customBgUrls.length;
-                return processDriveUrl(data.customBgUrls[customBgIndex]);
-            } else {
-                return processDriveUrl(data.backgroundUrl);
-            }
-        }
-
         function processDriveUrl(url) {
             if (!url) return "";
             let finalUrl = url.trim();
-            
-            // Match standard /file/d/ID/view or open?id=ID formats
-            // Improved regex to handle various query params like ?usp=drive_link
             const match = finalUrl.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
             if (match && match[1]) {
                 finalUrl = `https://lh3.googleusercontent.com/d/${match[1]}`;
@@ -1267,26 +815,32 @@
             return finalUrl;
         }
 
-        // --- 4. CSS ENGINE & VISIBILITY (LIVE STYLING) ---
-
-        // Manages the smooth fade mix effect
         function updateBackgroundImage(url) {
-            if (!url || url === currentBgUrl) return; // Prevent unnecessary loading/flickering
-            
+            if (!url || url === currentBgUrl) return;
             currentBgUrl = url;
             const nextLayerNum = activeBgLayer === 1 ? 2 : 1;
             const nextEl = document.getElementById(`bg-layer-${nextLayerNum}`);
             const currEl = document.getElementById(`bg-layer-${activeBgLayer}`);
             
+            // Failsafe timeout: ensure background shows if image loading hangs (3s limit)
+            const timeout = setTimeout(() => {
+                nextEl.style.backgroundImage = `url('${url}')`;
+                nextEl.classList.add('active');
+                if (currEl) currEl.classList.remove('active');
+                activeBgLayer = nextLayerNum;
+            }, 3000);
+
             const img = new Image();
             img.onload = () => {
+                clearTimeout(timeout);
                 nextEl.style.backgroundImage = `url('${url}')`;
                 nextEl.classList.add('active');
                 if (currEl) currEl.classList.remove('active');
                 activeBgLayer = nextLayerNum;
             };
             img.onerror = () => {
-                // Failsafe if image doesn't preload well
+                clearTimeout(timeout);
+                // Even if error, attempt set (might be 403 but visible, or triggers alt behavior)
                 nextEl.style.backgroundImage = `url('${url}')`;
                 nextEl.classList.add('active');
                 if (currEl) currEl.classList.remove('active');
@@ -1297,32 +851,38 @@
 
         function applyCSSVariables(data, updateBg = false) {
             const root = document.documentElement;
-            
             if (updateBg) {
-                updateBackgroundImage(getResolvedBgUrl(data));
+                let url = '';
+                if (data.backgroundType === 'local' && localImageDataUrl) {
+                    url = localImageDataUrl;
+                } else if (data.backgroundType === 'unsplash') {
+                    url = getRandomUnsplashUrl(data.unsplashCollection);
+                } else if (data.backgroundType === 'custom_list' && data.customBgUrls && data.customBgUrls.length > 0) {
+                    customBgIndex = customBgIndex % data.customBgUrls.length;
+                    url = processDriveUrl(data.customBgUrls[customBgIndex]);
+                } else {
+                    url = processDriveUrl(data.backgroundUrl);
+                }
+                updateBackgroundImage(url);
             }
             
             root.style.setProperty('--bg-overlay', `rgba(0, 0, 0, ${data.style.overlayOpacity})`);
             root.style.setProperty('--text-shadow', data.style.textShadow ? '0 2px 4px rgba(0,0,0,0.3), 0 4px 15px rgba(0,0,0,0.2)' : 'none');
             root.style.setProperty('--global-scale', data.style.globalScale);
-            
             root.style.setProperty('--clock-font', data.style.clockFont);
             root.style.setProperty('--clock-size', `${data.style.clockSize}px`);
             root.style.setProperty('--clock-weight', data.style.clockWeight);
-            
             root.style.setProperty('--greeting-font', data.style.greetingFont);
             root.style.setProperty('--greeting-size', `${data.style.greetingSize}px`);
             root.style.setProperty('--greeting-weight', data.style.greetingWeight);
-            
             root.style.setProperty('--quote-font', data.style.quoteFont);
             root.style.setProperty('--quote-size', `${data.style.quoteSize}px`);
             root.style.setProperty('--quote-weight', data.style.quoteWeight);
-            
-            // Layout & Glass
             root.style.setProperty('--glass-bg', `rgba(255, 255, 255, ${data.style.glassOpacity / 100})`);
             root.style.setProperty('--glass-blur', `${data.style.glassBlur}px`);
             root.style.setProperty('--glass-radius', `${data.style.glassRadius}px`);
             root.style.setProperty('--alignment', data.style.alignment === 'top' ? 'flex-start' : (data.style.alignment === 'bottom' ? 'flex-end' : 'center'));
+            root.style.setProperty('--card-gap', data.style.cardGap || 'clamp(15px, 4vw, 25px)');
         }
 
         function refreshBackground(direction = 1) {
@@ -1348,22 +908,19 @@
             }
         }
 
-        // Slideshow speed context menu logic
         function cycleSlideshowSpeed(e) {
-            e.preventDefault(); // Prevent native right click menu
-            const speeds = [3000, 5000, 10000, 30000]; // 3s, 5s, 10s, 30s
+            e.preventDefault();
+            const speeds = [3000, 5000, 10000, 30000];
             let current = appData.style.slideshowSpeed || 3000;
             let nextIndex = (speeds.indexOf(current) + 1) % speeds.length;
             appData.style.slideshowSpeed = speeds[nextIndex];
-            
             showToast(`Slideshow speed: ${speeds[nextIndex] / 1000}s`);
-            
             if(isSlideshowPlaying) {
                 clearInterval(slideshowInterval);
                 slideshowInterval = setInterval(() => refreshBackground(1), speeds[nextIndex]);
             }
             saveToCloud(appData);
-            try { localStorage.setItem("myNewTab_Data_v9", JSON.stringify(appData)); } catch (err) {}
+            try { localStorage.setItem("myNewTab_Data_v10", JSON.stringify(appData)); } catch (err) {}
         }
 
         function setupBgTimer() {
@@ -1382,7 +939,7 @@
             document.getElementById('search-wrapper').style.display = data.widgets.showSearch ? 'block' : 'none';
             document.getElementById('glass-card').style.display = data.widgets.showLinks ? 'flex' : 'none';
             document.getElementById('quote-container').style.display = data.widgets.showQuotes ? 'block' : 'none';
-            updateTimeDisplay(data); // Force UI update
+            updateTimeDisplay(data);
         }
 
         function applyUIHidden(isHidden) {
@@ -1399,34 +956,24 @@
             const now = new Date();
             const format = { hour: '2-digit', minute: '2-digit', hour12: data.widgets.clockFormat === '12h' };
             if(data.widgets.showSeconds) format.second = '2-digit';
-            
             document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', format).toUpperCase();
-            
             if(data.widgets.dynamicGreeting) {
                 const hour = now.getHours();
                 let greet = "Hello";
-                if(hour < 12) greet = "Good morning";
-                else if(hour < 18) greet = "Good afternoon";
-                else greet = "Good evening";
+                if(hour < 12) greet = "Good morning"; else if(hour < 18) greet = "Good afternoon"; else greet = "Good evening";
                 document.getElementById('greeting').textContent = `${greet}, ${data.name}!`;
             } else {
                 document.getElementById('greeting').textContent = `Hello ${data.name}!`;
             }
         }
 
-        function startClock() {
-            setInterval(() => updateTimeDisplay(appData), 1000);
-        }
+        function startClock() { setInterval(() => updateTimeDisplay(appData), 1000); }
 
-        // --- 5. MAIN UI RENDERING ---
         function renderMainUI() {
             const els = { linksContainer: document.getElementById('links-container'), pagesNav: document.getElementById('pages-nav') };
-            if(appData.pages.length === 0) {
-                els.linksContainer.innerHTML = `<div style="grid-column: 1 / -1; color: rgba(255,255,255,0.5);">No folders. Add in settings!</div>`;
-                els.pagesNav.innerHTML = '';
-                return;
-            }
-
+            // Failsafe for empty data
+            if(!appData.pages || appData.pages.length === 0) appData.pages = defaultData.pages;
+            
             if (currentPageIndex >= appData.pages.length) currentPageIndex = 0;
             const currentLinks = appData.pages[currentPageIndex].links;
             els.linksContainer.innerHTML = currentLinks.map(link => {
@@ -1441,17 +988,13 @@
                     } catch(e) {}
                     
                     if (domain) {
-                        iconHtml = `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=128" alt="${link.name}" onerror="this.outerHTML='<i class=&quot;fas fa-globe&quot; style=&quot;color: ${link.color || 'white'}&quot;></i>'">`;
+                        // Fallback handling if domain image fails
+                        iconHtml = `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=128" alt="${link.name}" onerror="this.outerHTML='<i class=&quot;fas fa-globe&quot; style=&quot;color: white&quot;></i>'">`;
                     } else {
                         iconHtml = `<i class="fas fa-globe" style="color: ${link.color || 'white'}"></i>`;
                     }
                 }
-
-                return `
-                    <a href="${link.url}" class="link-item" target="_parent" title="${link.name}">
-                        ${iconHtml}
-                    </a>
-                `;
+                return `<a href="${link.url}" class="link-item" target="_parent" title="${link.name}">${iconHtml}</a>`;
             }).join('');
 
             els.pagesNav.innerHTML = appData.pages.map((page, index) => `
@@ -1461,7 +1004,6 @@
 
         window.changePage = (index) => { currentPageIndex = index; renderMainUI(); };
 
-        // --- 6. SETTINGS MODAL LOGIC ---
         const ui = {
             modal: document.getElementById('settings-modal'), inputName: document.getElementById('input-name'),
             selectBgType: document.getElementById('select-bg-type'), selectBgTimer: document.getElementById('select-bg-timer'),
@@ -1537,7 +1079,6 @@
             ui.sliderGlassRadius.value = draftData.style.glassRadius; ui.valGlassRadius.textContent = `${draftData.style.glassRadius}px`;
             ui.selectAlignment.value = draftData.style.alignment;
 
-            // Init Modal Font Previews
             document.getElementById('preview-box-clock').style.fontFamily = draftData.style.clockFont;
             document.getElementById('preview-box-clock').style.fontWeight = draftData.style.clockWeight;
             document.getElementById('preview-box-greeting').style.fontFamily = draftData.style.greetingFont;
@@ -1562,18 +1103,15 @@
         function closeSettings() { applyCSSVariables(appData); applyWidgetsVisibility(appData); ui.modal.style.display = 'none'; }
 
         function saveSettings() {
-            // Check Google Drive Links
             draftData.backgroundUrl = processDriveUrl(ui.inputBg.value);
-            
-            // Process Custom List (Split by comma or newline)
             const urls = ui.inputBgList.value.split(/[\n,]+/).map(u => u.trim()).filter(u => u.length > 0);
             draftData.customBgUrls = urls;
             
             appData = JSON.parse(JSON.stringify(draftData));
             saveToCloud(appData);
-            try { localStorage.setItem("myNewTab_Data_v9", JSON.stringify(appData)); } catch (e) {}
+            try { localStorage.setItem("myNewTab_Data_v10", JSON.stringify(appData)); } catch (e) {}
             
-            applyCSSVariables(appData, true); // Update bg
+            applyCSSVariables(appData, true); 
             applyWidgetsVisibility(appData); 
             setupBgTimer();
             renderMainUI(); 
@@ -1598,7 +1136,6 @@
                 if(input.id === 'select-bg-type' || input.id === 'select-unsplash-collection') return; 
 
                 input.addEventListener('input', (e) => {
-                    // Update numeric labels
                     if (input.id === 'slider-overlay') ui.valOverlay.textContent = `${input.value}%`;
                     if (input.id === 'slider-scale') ui.valScale.textContent = `${input.value}x`;
                     if (input.id === 'slider-clock-size') ui.valClockSize.textContent = `${input.value}px`;
@@ -1611,7 +1148,6 @@
                     if (input.id === 'slider-glass-opacity') ui.valGlassOpacity.textContent = `${input.value}%`;
                     if (input.id === 'slider-glass-radius') ui.valGlassRadius.textContent = `${input.value}px`;
 
-                    // Update Modal Font Previews
                     document.getElementById('preview-box-clock').style.fontFamily = ui.selectClockFont.value;
                     document.getElementById('preview-box-clock').style.fontWeight = ui.sliderClockWeight.value;
                     document.getElementById('preview-box-greeting').style.fontFamily = ui.selectGreetingFont.value;
@@ -1619,7 +1155,6 @@
                     document.getElementById('preview-box-quote').style.fontFamily = ui.selectQuoteFont.value;
                     document.getElementById('preview-box-quote').style.fontWeight = ui.sliderQuoteWeight.value;
 
-                    // Synchronize state
                     draftData.name = ui.inputName.value;
                     draftData.customBgUrls = ui.inputBgList.value.split(/[\n,]+/).map(u => u.trim()).filter(u => u.length > 0);
                     draftData.style = {
@@ -1640,7 +1175,6 @@
                         showSeconds: ui.toggleSeconds.checked, uiHidden: draftData.widgets?.uiHidden || false
                     };
                     
-                    // Passing false so backgrounds don't aggressively refresh while sliding unrelated settings
                     applyCSSVariables(draftData, false);
                     applyWidgetsVisibility(draftData);
                 });
@@ -1671,13 +1205,9 @@
                 saveToLocalDB('fonts', 'customFont', dataUrl);
                 applyCustomFontToDOM(dataUrl);
                 ui.fontUploadStatus.style.display = 'block';
-                
-                // Auto-select the custom font for all elements in draft
                 ui.selectClockFont.value = "'MyCustomFont', sans-serif";
                 ui.selectGreetingFont.value = "'MyCustomFont', sans-serif";
                 ui.selectQuoteFont.value = "'MyCustomFont', sans-serif";
-                
-                // Trigger preview
                 document.getElementById('preview-box-clock').style.fontFamily = "'MyCustomFont', sans-serif";
                 document.getElementById('preview-box-greeting').style.fontFamily = "'MyCustomFont', sans-serif";
                 document.getElementById('preview-box-quote').style.fontFamily = "'MyCustomFont', sans-serif";
@@ -1685,10 +1215,10 @@
             reader.readAsDataURL(file);
         }
 
-        // --- 7. EDITOR RENDERERS ---
         function renderEditor() {
             const pageList = document.getElementById('editor-page-list');
             const pageDetails = document.getElementById('editor-page-details');
+            if(!draftData.pages) draftData.pages = [];
 
             pageList.innerHTML = draftData.pages.map((page, index) => `
                 <div class="page-pill ${index === editingPageIndex ? 'active' : ''}" onclick="selectPageForEdit(${index})"><i class="${page.icon}"></i> ${page.name}</div>
@@ -1739,7 +1269,6 @@
         window.addLink = () => { draftData.pages[editingPageIndex].links.push({ name: "New App", url: "https://", icon: "", color: "#ffffff" }); renderEditor(); };
         window.deleteLink = (idx) => { draftData.pages[editingPageIndex].links.splice(idx, 1); renderEditor(); };
 
-        // --- 8. EVENT LISTENERS ---
         function setupEventListeners() {
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -1750,14 +1279,12 @@
                 });
             });
 
-            // Image Upload
             ui.uploadZone.addEventListener('click', () => ui.fileInput.click());
             ui.fileInput.addEventListener('change', (e) => handleImageUpload(e.target.files[0]));
             ui.uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); ui.uploadZone.style.borderColor = '#0078d7'; });
             ui.uploadZone.addEventListener('dragleave', () => { ui.uploadZone.style.borderColor = '#444'; });
             ui.uploadZone.addEventListener('drop', (e) => { e.preventDefault(); ui.uploadZone.style.borderColor = '#444'; if (e.dataTransfer.files.length) handleImageUpload(e.dataTransfer.files[0]); });
 
-            // Font Upload
             ui.fontUploadZone.addEventListener('click', () => ui.fontFileInput.click());
             ui.fontFileInput.addEventListener('change', (e) => handleFontUpload(e.target.files[0]));
             ui.fontUploadZone.addEventListener('dragover', (e) => { e.preventDefault(); ui.fontUploadZone.style.borderColor = '#0078d7'; });
@@ -1787,23 +1314,20 @@
             document.getElementById('close-settings-x').addEventListener('click', closeSettings);
             document.getElementById('save-settings').addEventListener('click', saveSettings);
             
-            // New UI Top-Left Buttons
             document.getElementById('toggle-ui-btn').addEventListener('click', () => {
                 appData.widgets.uiHidden = !appData.widgets.uiHidden;
                 applyUIHidden(appData.widgets.uiHidden);
                 saveToCloud(appData);
-                try { localStorage.setItem("myNewTab_Data_v9", JSON.stringify(appData)); } catch(e) {}
+                try { localStorage.setItem("myNewTab_Data_v10", JSON.stringify(appData)); } catch(e) {}
             });
             
-            // Bottom-Left Slideshow Controls
             document.getElementById('prev-bg-btn').addEventListener('click', () => refreshBackground(-1));
             document.getElementById('next-bg-btn').addEventListener('click', () => refreshBackground(1));
             document.getElementById('play-bg-btn').addEventListener('click', toggleSlideshow);
-            document.getElementById('play-bg-btn').addEventListener('contextmenu', cycleSlideshowSpeed); // RIGHT CLICK
+            document.getElementById('play-bg-btn').addEventListener('contextmenu', cycleSlideshowSpeed);
 
-            // Supabase Auth Handlers
             document.getElementById('btn-login').addEventListener('click', async () => {
-                if(!supabaseClient) return alert("Supabase credentials missing in code.");
+                if(!supabaseClient) return alert("Supabase credentials missing or invalid.");
                 const email = ui.authEmail.value; const password = ui.authPassword.value;
                 ui.authError.style.display = 'none';
                 const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
@@ -1811,7 +1335,7 @@
             });
 
             document.getElementById('btn-register').addEventListener('click', async () => {
-                if(!supabaseClient) return alert("Supabase credentials missing in code.");
+                if(!supabaseClient) return alert("Supabase credentials missing or invalid.");
                 const email = ui.authEmail.value; const password = ui.authPassword.value;
                 ui.authError.style.display = 'none';
                 const { error } = await supabaseClient.auth.signUp({ email, password });
