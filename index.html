@@ -864,17 +864,17 @@
                 {
                     icon: "fas fa-home", name: "Personal",
                     links: [
-                        { name: "YouTube", url: "https://youtube.com", icon: "fab fa-youtube", color: "#ff0000" },
-                        { name: "Reddit", url: "https://reddit.com", icon: "fab fa-reddit", color: "#ff4500" },
-                        { name: "Instagram", url: "https://instagram.com", icon: "fab fa-instagram", color: "#e1306c" },
-                        { name: "Telegram", url: "https://web.telegram.org", icon: "fab fa-telegram-plane", color: "#0088cc" }
+                        { name: "YouTube", url: "https://youtube.com", icon: "", color: "#ff0000" },
+                        { name: "Reddit", url: "https://reddit.com", icon: "", color: "#ff4500" },
+                        { name: "Instagram", url: "https://instagram.com", icon: "", color: "#e1306c" },
+                        { name: "Telegram", url: "https://web.telegram.org", icon: "", color: "#0088cc" }
                     ]
                 },
                 {
                     icon: "fas fa-briefcase", name: "Work",
                     links: [
-                        { name: "Gmail", url: "https://mail.google.com", icon: "fas fa-envelope", color: "#ea4335" },
-                        { name: "GitHub", url: "https://github.com", icon: "fab fa-github", color: "#ffffff" }
+                        { name: "Gmail", url: "https://mail.google.com", icon: "", color: "#ea4335" },
+                        { name: "GitHub", url: "https://github.com", icon: "", color: "#ffffff" }
                     ]
                 }
             ]
@@ -939,8 +939,8 @@
         // --- 3. DATA LOADING & INITIALIZATION ---
         function init() {
             try {
-                // Bumped version string to v5 to force the new defaults
-                const saved = localStorage.getItem("myNewTab_Data_v5");
+                // Bumped version string to v6 to force the new defaults
+                const saved = localStorage.getItem("myNewTab_Data_v6");
                 if (saved) {
                     appData = JSON.parse(saved);
                     appData.style = { ...defaultStyle, ...appData.style };
@@ -1062,11 +1062,30 @@
 
             if (currentPageIndex >= appData.pages.length) currentPageIndex = 0;
             const currentLinks = appData.pages[currentPageIndex].links;
-            els.linksContainer.innerHTML = currentLinks.map(link => `
-                <a href="${link.url}" class="link-item" target="_parent" title="${link.name}">
-                    <i class="${link.icon}" style="color: ${link.color || 'white'}"></i>
-                </a>
-            `).join('');
+            els.linksContainer.innerHTML = currentLinks.map(link => {
+                let iconHtml = '';
+                if (link.icon && link.icon.trim() !== '') {
+                    iconHtml = `<i class="${link.icon}" style="color: ${link.color || 'white'}"></i>`;
+                } else {
+                    let domain = '';
+                    try {
+                        let parsedUrl = link.url.startsWith('http') ? link.url : 'https://' + link.url;
+                        domain = new URL(parsedUrl).hostname;
+                    } catch(e) {}
+                    
+                    if (domain) {
+                        iconHtml = `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=128" alt="${link.name}" style="width: 55%; height: 55%; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); border-radius: 4px;">`;
+                    } else {
+                        iconHtml = `<i class="fas fa-globe" style="color: ${link.color || 'white'}"></i>`;
+                    }
+                }
+
+                return `
+                    <a href="${link.url}" class="link-item" target="_parent" title="${link.name}">
+                        ${iconHtml}
+                    </a>
+                `;
+            }).join('');
 
             els.pagesNav.innerHTML = appData.pages.map((page, index) => `
                 <div class="page-dot ${index === currentPageIndex ? 'active' : ''}" onclick="changePage(${index})" title="${page.name}"><i class="${page.icon}"></i></div>
@@ -1177,7 +1196,7 @@
             draftData.customBgUrls = urls;
             
             appData = JSON.parse(JSON.stringify(draftData));
-            try { localStorage.setItem("myNewTab_Data_v5", JSON.stringify(appData)); } catch (e) {}
+            try { localStorage.setItem("myNewTab_Data_v6", JSON.stringify(appData)); } catch (e) {}
             
             applyCSSVariables(appData); applyWidgetsVisibility(appData); renderMainUI(); ui.modal.style.display = 'none';
         }
@@ -1294,7 +1313,7 @@
                     <div class="link-fields">
                         <input type="text" placeholder="App Name" value="${link.name}" onchange="updateLinkField(${lIndex}, 'name', this.value)">
                         <input type="text" placeholder="URL" value="${link.url}" onchange="updateLinkField(${lIndex}, 'url', this.value)">
-                        <input type="text" placeholder="Icon (e.g. fab fa-youtube)" value="${link.icon}" onchange="updateLinkField(${lIndex}, 'icon', this.value)" style="grid-column: 1 / -1;">
+                        <input type="text" placeholder="Icon (Leave blank to auto-fetch from URL)" value="${link.icon}" onchange="updateLinkField(${lIndex}, 'icon', this.value)" style="grid-column: 1 / -1;">
                     </div>
                     <button class="btn-icon danger" onclick="deleteLink(${lIndex})"><i class="fas fa-times"></i></button>
                 </div>
@@ -1309,7 +1328,7 @@
         window.updateLinkField = (idx, f, v) => { draftData.pages[editingPageIndex].links[idx][f] = v; };
         window.addPage = () => { draftData.pages.push({ name: "New Folder", icon: "fas fa-folder", links: [] }); editingPageIndex = draftData.pages.length - 1; renderEditor(); };
         window.deletePage = () => { draftData.pages.splice(editingPageIndex, 1); editingPageIndex = Math.max(0, editingPageIndex - 1); renderEditor(); };
-        window.addLink = () => { draftData.pages[editingPageIndex].links.push({ name: "New App", url: "https://", icon: "fas fa-link", color: "#ffffff" }); renderEditor(); };
+        window.addLink = () => { draftData.pages[editingPageIndex].links.push({ name: "New App", url: "https://", icon: "", color: "#ffffff" }); renderEditor(); };
         window.deleteLink = (idx) => { draftData.pages[editingPageIndex].links.splice(idx, 1); renderEditor(); };
 
         // --- 8. EVENT LISTENERS ---
